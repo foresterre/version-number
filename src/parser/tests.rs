@@ -1,0 +1,78 @@
+use crate::parser::Parser;
+use crate::Version;
+
+#[test]
+fn two_component() {
+    let p = Parser::from_slice("123.456".as_bytes());
+    let version = p.parse().unwrap();
+
+    assert_eq!(version, crate::Version::new_major_minor(123, 456))
+}
+
+#[test]
+fn three_component() {
+    let p = Parser::from_slice("123.456.789".as_bytes());
+    let version = p.parse().unwrap();
+
+    assert_eq!(
+        version,
+        crate::Version::new_major_minor_patch(123, 456, 789)
+    )
+}
+
+#[yare::parameterized(
+    zeros = {"10.101.100", (10, 101, 100) },
+    simple = {"1.2.3", (1, 2, 3) },
+    v1_point_oh = {"1.0.0", (1, 0, 0) }, 
+    v2_point_oh = {"2.0.0", (2, 0, 0) },
+)]
+fn three_component_parse_ok_variations(input: &str, expected: (u64, u64, u64)) {
+    let p = Parser::from_slice(input.as_bytes());
+    let outcome = p.parse().unwrap();
+
+    assert_eq!(outcome, Version::from(expected));
+}
+
+// NOTE: currently we accept numbers starting with zero's
+//  We should consider changing this, as semver numbers disallow this
+#[yare::parameterized(
+    first = {"0123.456.789"},
+    second = {"123.0456.789"},
+    third = {"123.456.0789"}
+)]
+fn starts_with_zero(input: &str) {
+    let p = Parser::from_slice(input.as_bytes());
+    let result = p.parse();
+
+    assert!(result.is_ok());
+}
+
+#[yare::parameterized(
+    empty = { "" },
+    one = { "1" },
+    one_dot = { "1." },
+    dot_v1 = { ".1.0.0" },
+    v1_dot = { "1.0.0." },
+    v1_commas = { "1,0,0" },
+    v1_dot_with_spaces = { "1. 0. 0" },
+    v1_dot_untrimemd_lhs = { " 1.0.0" },
+    v1_dot_untrimemd_rhs = { "1.0.0 " },
+    v1_double_dots = { "1..0.0 " },
+    v1_dot_zero_dot_eoi = { "1.0. " },
+    v1_zwsp = { "0.​1.0" },
+    range0 = { "^0.1.0" },
+    range1 = { "~0.1.0" },
+    range2 = { "=0.1.0" },
+    overflow0 = { &format!("{}.1.2", u128::from(u64::MAX) + 1) },
+    overflow1 = { &format!("1.{}.2", u128::from(u64::MAX) + 1) },
+    overflow2 = { &format!("1.2.{}", u128::from(u64::MAX) + 1) },
+    unexpected_input0 = { "1e.0.0" },
+    unexpected_input1 = { "1.0p.0" },
+    unexpected_input2 = { "1.0.j" },
+)]
+fn failure_variations(input: &str) {
+    let p = Parser::from_slice(input.as_bytes());
+    let result = p.parse();
+
+    assert!(result.is_err());
+}

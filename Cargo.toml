@@ -1,0 +1,15 @@
+[package]
+name = "version-number"
+authors = ["Martijn Gribnau <garm@ilumeo.com>"]
+description = "Two and three component 'major.minor' and 'major.minor.patch' version number parsing"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/foresterre/version-number"
+
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+thiserror = "1"
+
+[dev-dependencies]
+yare = "1"
