@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1]
+
+(Re-release of [0.2.0])
+
+[0.2.1]: https://github.com/foresterre/version-number/releases/tag/v0.2.1
+
+
 ## [0.2.0]
 
 ### Changed
