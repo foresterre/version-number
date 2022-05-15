@@ -1,4 +1,4 @@
-use crate::parser::Parser;
+use crate::parser::{ErrorReason, NumberError, Parser};
 use crate::Version;
 
 #[test]
@@ -6,7 +6,7 @@ fn two_component() {
     let p = Parser::from_slice("123.456".as_bytes());
     let version = p.parse().unwrap();
 
-    assert_eq!(version, crate::Version::new_major_minor(123, 456))
+    assert_eq!(version, Version::new_major_minor(123, 456))
 }
 
 #[test]
@@ -14,10 +14,7 @@ fn three_component() {
     let p = Parser::from_slice("123.456.789".as_bytes());
     let version = p.parse().unwrap();
 
-    assert_eq!(
-        version,
-        crate::Version::new_major_minor_patch(123, 456, 789)
-    )
+    assert_eq!(version, Version::new_major_minor_patch(123, 456, 789))
 }
 
 #[yare::parameterized(
@@ -33,8 +30,7 @@ fn three_component_parse_ok_variations(input: &str, expected: (u64, u64, u64)) {
     assert_eq!(outcome, Version::from(expected));
 }
 
-// NOTE: currently we accept numbers starting with zero's
-//  We should consider changing this, as semver numbers disallow this
+// Leading zero's are disallowed, unless the complete value consist singularly of the digit '0'
 #[yare::parameterized(
     first = {"0123.456.789"},
     second = {"123.0456.789"},
@@ -44,7 +40,34 @@ fn starts_with_zero(input: &str) {
     let p = Parser::from_slice(input.as_bytes());
     let result = p.parse();
 
-    assert!(result.is_ok());
+    assert_eq!(
+        result.unwrap_err().reason(),
+        &ErrorReason::NumberError(NumberError::LeadingZero)
+    );
+}
+
+#[yare::parameterized(
+    t0 = {"0.456.789"},
+    t2 = {"123.0.789"},
+    t3 = {"123.456.0"},
+    t01 = {"0.0.123"},
+    t02 = {"0.123.0"},
+    t12 = {"123.0.0"},
+    t012 = {"0.0.0"},
+    d0 = {"0.123"},
+    d1 = {"123.0"},
+    d01 = {"0.0"},
+)]
+fn has_zero_component(input: &str) {
+    let p = Parser::from_slice(input.as_bytes());
+    let result = p.parse();
+    let value = result.unwrap();
+
+    assert!(
+        value.major() == 0
+            || value.minor() == 0
+            || (value.patch().is_some() && value.patch().unwrap() == 0)
+    );
 }
 
 #[yare::parameterized(

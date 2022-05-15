@@ -3,14 +3,13 @@ mod tests;
 
 macro_rules! to_number {
     ($initial:expr) => {
-        Ok(Some(u64::from($initial - b'0')))
+        Ok(u64::from($initial - b'0'))
     };
     ($current:expr, $next:expr) => {{
         $current
             .checked_mul(10)
             .and_then(|c| c.checked_add(u64::from($next - b'0')))
             .ok_or_else(|| NumberError::Overflow)
-            .map(|v| Some(v))
     }};
 }
 
@@ -102,12 +101,39 @@ pub enum ErrorReason {
 
 #[derive(Clone, Debug, thiserror::Error, Eq, PartialEq)]
 pub enum NumberError {
-    #[error("Overflow: Found number component which would be larger than the maximum supported number (max={})", Number::MAX)]
+    #[error("Number may not start with a leading zero, unless the complete component is '0'")]
+    LeadingZero,
+
+    #[error("Overflow: Found number component which would be larger than the maximum supported number (max={})", u64::MAX)]
     Overflow,
 }
 
 type Number = u64;
-struct NumberComponent(Option<Number>);
+
+#[derive(Copy, Clone)]
+struct NumberConstructor(Number);
+
+impl NumberConstructor {
+    fn try_new(digit: u8) -> Result<Self, NumberError> {
+        to_number!(digit).map(NumberConstructor)
+    }
+
+    fn append_digit(&mut self, digit: u8) -> Result<(), NumberError> {
+        if self.0 == 0 {
+            return Err(NumberError::LeadingZero);
+        }
+
+        self.0 = to_number!(self.0, digit)?;
+
+        Ok(())
+    }
+
+    fn as_value(&self) -> Number {
+        self.0
+    }
+}
+
+struct NumberComponent(Option<NumberConstructor>);
 
 impl NumberComponent {
     fn new() -> Self {
@@ -115,16 +141,17 @@ impl NumberComponent {
     }
 
     fn insert_digit(&mut self, token: u8) -> Result<(), NumberError> {
-        if let Some(v) = self.0 {
-            self.0 = to_number!(v, token)?;
-            Ok(())
+        if let Some(num) = &mut self.0 {
+            // A digit was already pushed
+            num.append_digit(token)
         } else {
-            self.0 = to_number!(token)?;
+            let number = NumberConstructor::try_new(token)?;
+            self.0 = Some(number);
             Ok(())
         }
     }
 
-    fn get(&self) -> Option<Number> {
+    fn get(&self) -> Option<NumberConstructor> {
         self.0
     }
 }
@@ -148,8 +175,8 @@ impl<'slice> Parser<'slice> {
         if self.is_done(cursor) {
             // is_done = true
             return Ok(crate::Version::MajorMinor(crate::MajorMinor {
-                major: first,
-                minor: second,
+                major: first.as_value(),
+                minor: second.as_value(),
             }));
         }
 
@@ -160,9 +187,9 @@ impl<'slice> Parser<'slice> {
         if self.is_done(cursor) {
             // is_done = true
             return Ok(crate::Version::MajorMinorPatch(crate::MajorMinorPatch {
-                major: first,
-                minor: second,
-                patch: third,
+                major: first.as_value(),
+                minor: second.as_value(),
+                patch: third.as_value(),
             }));
         }
 
@@ -175,7 +202,7 @@ impl<'slice> Parser<'slice> {
         ));
     }
 
-    fn parse_number(&self, cursor: &mut usize) -> Result<Number, Error> {
+    fn parse_number(&self, cursor: &mut usize) -> Result<NumberConstructor, Error> {
         let mut value = NumberComponent::new();
 
         while let Some(&b) = self.slice.get(*cursor) {
