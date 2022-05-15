@@ -53,8 +53,8 @@ jobs:
           profile: minimal
 
       - name: fetch
-      	run: cargo fetch --verbose
-      
+        run: cargo fetch --verbose
+
       - name: build
         run: cargo build --verbose
 
