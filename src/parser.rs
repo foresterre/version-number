@@ -193,13 +193,13 @@ impl<'slice> Parser<'slice> {
             }));
         }
 
-        return Err(Error::from_parser_with_cursor(
+        Err(Error::from_parser_with_cursor(
             self,
             cursor,
             ErrorReason::ExpectedEndOfInput {
                 extra_input: self.slice[cursor..].to_vec(),
             },
-        ));
+        ))
     }
 
     fn parse_number(&self, cursor: &mut usize) -> Result<NumberConstructor, Error> {
