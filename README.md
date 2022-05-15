@@ -22,7 +22,7 @@ Run `cargo add version-number` or add the `version-number` crate manually to you
 
 ```toml
 [dependencies]
-version-number = "0.2.0"
+version-number = "0.2"
 ```
 
 ### Usage
