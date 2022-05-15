@@ -176,10 +176,9 @@ impl<'slice> Parser<'slice> {
     }
 
     fn parse_number(&self, cursor: &mut usize) -> Result<Number, Error> {
-        let mut i = *cursor;
         let mut value = NumberComponent::new();
 
-        while let Some(&b) = self.slice.get(i) {
+        while let Some(&b) = self.slice.get(*cursor) {
             if !b.is_ascii_digit() {
                 break;
             }
@@ -188,10 +187,9 @@ impl<'slice> Parser<'slice> {
                 .insert_digit(b)
                 .map_err(|error| Error::from_parser(self, error.into()))?;
 
-            i += 1;
+            *cursor += 1;
         }
 
-        *cursor = i;
         value.get().ok_or_else(|| {
             Error::from_parser_with_cursor(self, *cursor, ErrorReason::UnexpectedEndOfInput)
         })
