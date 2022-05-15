@@ -5,8 +5,14 @@ description = "Two and three component 'major.minor' and 'major.minor.patch' ver
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/foresterre/version-number"
 
-version = "0.1.0"
+version = "0.2.0"
 edition = "2018"
+
+keywords = ["version", "semver", "version core", "version shorthand", "rust-version"]
+categories = ["parser-implementations"]
+
+[package.metadata]
+msrv = "1.43.1"
 
 [dependencies]
 thiserror = "1"
