@@ -24,7 +24,7 @@ jobs:
           override: true
           profile: minimal
       - name: install_cargo_msrv
-        run: cargo install cargo-msrv
+        run: cargo install cargo-msrv --no-default-features
       - name: version_of_cargo_msrv
         run: cargo msrv --version
       - name: run_cargo_msrv
