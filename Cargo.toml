@@ -8,7 +8,7 @@ repository = "https://github.com/foresterre/version-number"
 version = "0.2.0"
 edition = "2018"
 
-keywords = ["version", "semver", "version core", "version shorthand", "rust-version"]
+keywords = ["version", "semver", "version-core", "semver-shorthand", "rust-version"]
 categories = ["parser-implementations"]
 
 [package.metadata]
