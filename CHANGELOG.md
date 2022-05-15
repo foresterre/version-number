@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2]
+
+### Fixed
+
+* Updated docs which still refered to accepting leading zeros, while they're now rejected
+
+[0.2.2]: https://github.com/foresterre/version-number/releases/tag/v0.2.2
+
 ## [0.2.1]
 
 (Re-release of [0.2.0])
