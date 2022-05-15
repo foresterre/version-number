@@ -82,7 +82,7 @@ fn has_zero_component(input: &str) {
     v1_dot_untrimemd_rhs = { "1.0.0 " },
     v1_double_dots = { "1..0.0 " },
     v1_dot_zero_dot_eoi = { "1.0. " },
-    v1_zwsp = { "0.​1.0" },
+    v1_zwsp = { "0.\u{200B}1.0" },
     range0 = { "^0.1.0" },
     range1 = { "~0.1.0" },
     range2 = { "=0.1.0" },
