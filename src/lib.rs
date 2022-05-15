@@ -36,7 +36,6 @@ use std::fmt;
 use std::str::FromStr;
 
 mod parser;
-mod version;
 
 /// Top level errors for version-numbers.
 #[derive(Debug, thiserror::Error)]
