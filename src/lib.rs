@@ -3,9 +3,10 @@
 //! # version-number
 //!
 //! ## Synopsis
+//!
 //! A crate to represent and parse two- and three-component version numbers of the form `major.minor`,
 //! and `major.minor.patch` respectively. These version numbers are often seen within the Rust
-//! project manifests.
+//! project manifests
 //!
 //! ## Semver compatibility
 //!
@@ -15,22 +16,11 @@
 //! For example, `1.0` and `1.0.0` are both accepted by this library, while the former is
 //! rejected by [`semver`].
 //!
-//! In addition [`crate::Version`] does not accept extra labels such as build parameters, which are
+//! In addition [`Version`] does not accept extra labels such as build parameters, which are
 //! an extension of the [`semver`] version number itself.
 //!
-//!
-//! ### Exception: leading zeros (To be removed)
-//!
-//! Another exception where this library differs from semver is by accepting leading zeros,
-//! i.e. version number components starting with a zero ('0').
-//!
-//! These are not allowed in semver (e.g. `01.0.0` is disallowed, but `1.0.0` is allowed).
-//! This library currently however does allow leading zeroes (and the library does not
-//! disambiguate between `01.0.0` and `1.0.0`, so both are seen as equivalent).
-//!
-//! **This is planned to change in a future version**
-//!
 //! [`semver`]: https://semver.org/spec/v2.0.0.html
+//! [`Version`]: crate::Version
 
 use std::fmt;
 use std::str::FromStr;
