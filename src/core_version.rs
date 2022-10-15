@@ -1,3 +1,4 @@
+use crate::FullVersion;
 use std::fmt;
 
 /// A two-component `major.minor` version.
@@ -29,5 +30,31 @@ impl From<(u64, u64)> for CoreVersion {
 impl fmt::Display for CoreVersion {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_fmt(format_args!("{}.{}", self.major, self.minor))
+    }
+}
+
+impl From<FullVersion> for CoreVersion {
+    /// A lossy conversion, which discards the `patch` component.
+    fn from(v: FullVersion) -> Self {
+        Self {
+            major: v.major,
+            minor: v.minor,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    mod conversion {
+        use crate::{CoreVersion, FullVersion};
+
+        #[test]
+        fn lossy_conversion() {
+            let full = FullVersion::from((1, 2, 3));
+            let core = Into::<CoreVersion>::into(full.clone());
+
+            assert_eq!(full.major, core.major);
+            assert_eq!(full.minor, core.minor);
+        }
     }
 }
