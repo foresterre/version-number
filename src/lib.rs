@@ -30,6 +30,11 @@
 use std::fmt;
 use std::str::FromStr;
 
+pub use core_version::CoreVersion;
+pub use full_version::FullVersion;
+
+mod core_version;
+mod full_version;
 mod parser;
 
 /// Top level errors for version-numbers.
@@ -139,51 +144,5 @@ impl From<(u64, u64)> for Version {
 impl From<(u64, u64, u64)> for Version {
     fn from(tuple: (u64, u64, u64)) -> Self {
         Self::Full(FullVersion::from(tuple))
-    }
-}
-
-/// A two-component `major.minor` version.
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct CoreVersion {
-    major: u64,
-    minor: u64,
-}
-
-impl From<(u64, u64)> for CoreVersion {
-    fn from(tuple: (u64, u64)) -> Self {
-        CoreVersion {
-            major: tuple.0,
-            minor: tuple.1,
-        }
-    }
-}
-
-impl fmt::Display for CoreVersion {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_fmt(format_args!("{}.{}", self.major, self.minor))
-    }
-}
-
-/// A three-component `major.minor.patch` version.
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct FullVersion {
-    major: u64,
-    minor: u64,
-    patch: u64,
-}
-
-impl From<(u64, u64, u64)> for FullVersion {
-    fn from(tuple: (u64, u64, u64)) -> Self {
-        FullVersion {
-            major: tuple.0,
-            minor: tuple.1,
-            patch: tuple.2,
-        }
-    }
-}
-
-impl fmt::Display for FullVersion {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_fmt(format_args!("{}.{}.{}", self.major, self.minor, self.patch))
     }
 }
