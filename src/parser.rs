@@ -174,7 +174,7 @@ impl<'slice> Parser<'slice> {
 
         if self.is_done(cursor) {
             // is_done = true
-            return Ok(crate::Version::MajorMinor(crate::MajorMinor {
+            return Ok(crate::Version::Core(crate::CoreVersion {
                 major: first.as_value(),
                 minor: second.as_value(),
             }));
@@ -186,7 +186,7 @@ impl<'slice> Parser<'slice> {
 
         if self.is_done(cursor) {
             // is_done = true
-            return Ok(crate::Version::MajorMinorPatch(crate::MajorMinorPatch {
+            return Ok(crate::Version::Full(crate::FullVersion {
                 major: first.as_value(),
                 minor: second.as_value(),
                 patch: third.as_value(),

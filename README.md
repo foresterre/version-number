@@ -13,12 +13,14 @@ Examples of two- respectively three component version numbers are `1.51` and `1.
 An example where this version type is found, is the `package.rust-version` field in the Cargo manifest (which crate authors use
 to set the MSRV).
 
-If you would like to use this library to just parse two xor three component versions, please open an issue :), I would be happy to
-support this.
+We call a two component `major.minor` version number, such as `1.51`, a **Core Version**, and a three component
+`major.minor.patch` version number, such as `1.7.0`, a **Full Version**.
 
-### Install
+### Add as a dependency
 
-Run `cargo add version-number` or add the `version-number` crate manually to your Cargo manifest (`Cargo.toml`) as a dependency:
+To add `rust-version` as a dependency to your Rust project, you may run  `cargo add version-number`.
+
+Alternatively, you may add the `version-number` crate manually to your Cargo manifest (i.e. `Cargo.toml`) as a dependency:
 
 ```toml
 [dependencies]
@@ -31,13 +33,15 @@ version-number = "0.2"
 use version_number::Version;
 
 fn main() {
-    let major_minor = Version::parse("1.27").unwrap();
-    println!("Two component version: {}", major_minor);
+    let core = Version::parse("1.27").unwrap();
+    println!("Two component version: {}", core);
   
-    let major_minor_patch = Version::parse("1.27.0").unwrap();
-    println!("Three component version: {}", major_minor_patch);
+    let full = Version::parse("1.27.0").unwrap();
+    println!("Three component version: {}", full);
 }
 ```
+
+Please refer to the [docs](https://docs.rs/version-number/latest/version_number/) to review all functionality.
 
 ### License
  
