@@ -2,7 +2,7 @@ use crate::FullVersion;
 use std::fmt;
 
 /// A two-component `major.minor` version.
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct CoreVersion {
     /// A `major` version is incremented when backwards incompatible changes are made to a public
     /// API.

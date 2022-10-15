@@ -36,6 +36,7 @@ pub use full_version::FullVersion;
 mod core_version;
 mod full_version;
 mod parser;
+mod range;
 
 /// Top level errors for version-numbers.
 #[derive(Debug, thiserror::Error)]
