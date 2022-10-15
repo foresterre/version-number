@@ -6,7 +6,7 @@ fn two_component() {
     let p = Parser::from_slice("123.456".as_bytes());
     let version = p.parse().unwrap();
 
-    assert_eq!(version, Version::new_major_minor(123, 456))
+    assert_eq!(version, Version::new_core_version(123, 456))
 }
 
 #[test]
@@ -14,7 +14,7 @@ fn three_component() {
     let p = Parser::from_slice("123.456.789".as_bytes());
     let version = p.parse().unwrap();
 
-    assert_eq!(version, Version::new_major_minor_patch(123, 456, 789))
+    assert_eq!(version, Version::new_full_version(123, 456, 789))
 }
 
 #[yare::parameterized(
