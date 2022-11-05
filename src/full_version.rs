@@ -1,3 +1,4 @@
+use crate::CoreVersion;
 use std::fmt;
 
 /// A three-component `major.minor.patch` version.
@@ -19,6 +20,18 @@ pub struct FullVersion {
     pub patch: u64,
 }
 
+impl FullVersion {
+    /// Convert this full version to a core version.
+    ///
+    /// This conversion is lossy because the `patch` value is lost upon conversion.
+    pub fn to_core_version_lossy(self) -> CoreVersion {
+        CoreVersion {
+            major: self.major,
+            minor: self.minor,
+        }
+    }
+}
+
 impl From<(u64, u64, u64)> for FullVersion {
     fn from(tuple: (u64, u64, u64)) -> Self {
         FullVersion {
@@ -37,7 +50,7 @@ impl fmt::Display for FullVersion {
 
 #[cfg(test)]
 mod tests {
-    use crate::FullVersion;
+    use crate::{CoreVersion, FullVersion};
 
     #[test]
     fn from_tuple() {
@@ -64,5 +77,17 @@ mod tests {
         let displayed = format!("{}", core_version);
 
         assert_eq!(&displayed, expected);
+    }
+
+    #[test]
+    fn convert_lossy() {
+        let full = FullVersion {
+            major: 1,
+            minor: 2,
+            patch: 3,
+        };
+        let converted = full.to_core_version_lossy();
+
+        assert_eq!(CoreVersion { major: 1, minor: 2 }, converted)
     }
 }
