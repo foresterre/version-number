@@ -1,7 +1,7 @@
 use std::fmt;
 
 /// A two-component `major.minor` version.
-#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, PartialOrd)]
 pub struct CoreVersion {
     /// A `major` version is incremented when backwards incompatible changes are made to a public
     /// API.
@@ -56,5 +56,35 @@ mod tests {
         let displayed = format!("{}", core_version);
 
         assert_eq!(&displayed, expected);
+    }
+}
+
+#[cfg(test)]
+mod partial_ord_tests {
+    use crate::CoreVersion;
+    use std::cmp::Ordering;
+
+    #[yare::parameterized(
+        zero = { CoreVersion { major: 0, minor: 0 }, CoreVersion { major: 0, minor: 0 } },
+        ones = { CoreVersion { major: 1, minor: 1 }, CoreVersion { major: 1, minor: 1 } },
+    )]
+    fn equals(lhs: CoreVersion, rhs: CoreVersion) {
+        assert_eq!(lhs.partial_cmp(&rhs), Some(Ordering::Equal));
+    }
+
+    #[yare::parameterized(
+        minor_by_1 = { CoreVersion { major: 0, minor: 0 }, CoreVersion { major: 0, minor: 1 } },
+        major_by_1 = { CoreVersion { major: 1, minor: 0 }, CoreVersion { major: 2, minor: 0 } },
+    )]
+    fn less(lhs: CoreVersion, rhs: CoreVersion) {
+        assert_eq!(lhs.partial_cmp(&rhs), Some(Ordering::Less));
+    }
+
+    #[yare::parameterized(
+        minor_by_1 = { CoreVersion { major: 0, minor: 1 }, CoreVersion { major: 0, minor: 0 } },
+        major_by_1 = { CoreVersion { major: 1, minor: 0 }, CoreVersion { major: 0, minor: 0 } },
+    )]
+    fn greater(lhs: CoreVersion, rhs: CoreVersion) {
+        assert_eq!(lhs.partial_cmp(&rhs), Some(Ordering::Greater));
     }
 }
