@@ -31,3 +31,30 @@ impl fmt::Display for CoreVersion {
         f.write_fmt(format_args!("{}.{}", self.major, self.minor))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::CoreVersion;
+
+    #[test]
+    fn from_tuple() {
+        let major = 0;
+        let minor = 1;
+
+        assert_eq!(
+            CoreVersion { major, minor },
+            CoreVersion::from((major, minor))
+        );
+    }
+
+    #[yare::parameterized(
+        zeros = { CoreVersion { major: 0, minor: 0 }, "0.0" },
+        zero_prefix = { CoreVersion { major: 01, minor: 02 }, "1.2" },
+        non_zero = { CoreVersion { major: 1, minor: 2 }, "1.2" },
+    )]
+    fn display(core_version: CoreVersion, expected: &str) {
+        let displayed = format!("{}", core_version);
+
+        assert_eq!(&displayed, expected);
+    }
+}
