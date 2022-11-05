@@ -34,3 +34,35 @@ impl fmt::Display for FullVersion {
         f.write_fmt(format_args!("{}.{}.{}", self.major, self.minor, self.patch))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::FullVersion;
+
+    #[test]
+    fn from_tuple() {
+        let major = 0;
+        let minor = 1;
+        let patch = 2;
+
+        assert_eq!(
+            FullVersion {
+                major,
+                minor,
+                patch
+            },
+            FullVersion::from((major, minor, patch))
+        );
+    }
+
+    #[yare::parameterized(
+        zeros = { FullVersion { major: 0, minor: 0, patch: 0 }, "0.0.0" },
+        zero_prefix = { FullVersion { major: 01, minor: 02, patch: 03 }, "1.2.3" },
+        non_zero = { FullVersion { major: 1, minor: 2, patch: 3 }, "1.2.3" },
+    )]
+    fn display(core_version: FullVersion, expected: &str) {
+        let displayed = format!("{}", core_version);
+
+        assert_eq!(&displayed, expected);
+    }
+}
