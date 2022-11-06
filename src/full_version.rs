@@ -1,7 +1,20 @@
 use crate::CoreVersion;
 use std::fmt;
 
-/// A three-component `major.minor.patch` version.
+/// A three-component `MAJOR.MINOR.PATCH` version.
+///
+/// This version number is a subset of [`semver`]. In particular, it consists of the `MAJOR`.
+/// `MINOR` and `PATCH` components, and leaves out the additional labels for pre-release and build
+/// metadata.
+///
+/// If you require a version number which also discards the `PATCH` number,
+/// please see the [`CoreVersion`] variant.
+///
+/// For a [`semver`] compliant parser, you should use the `semver` [`crate`] instead.
+///
+/// [`semver`]: https://semver.org/spec/v2.0.0.html
+/// [`CoreVersion`]: crate::CoreVersion
+/// [`crate`]: https://crates.io/crates/semver
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FullVersion {
     /// A `major` version is incremented when backwards incompatible changes are made to a public
@@ -21,6 +34,19 @@ pub struct FullVersion {
 }
 
 impl FullVersion {
+    /// Instantiate a three component, version number with `MAJOR`, `MINOR` and `PATCH` components.
+    ///
+    /// See [`FullVersion`] for more.
+    ///
+    /// [`FullVersion`]: crate::FullVersion
+    pub fn new(major: u64, minor: u64, patch: u64) -> Self {
+        Self {
+            major,
+            minor,
+            patch,
+        }
+    }
+
     /// Convert this full version to a core version.
     ///
     /// This conversion is lossy because the `patch` value is lost upon conversion.
