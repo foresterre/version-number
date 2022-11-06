@@ -1,6 +1,18 @@
 use std::fmt;
 
-/// A two-component `major.minor` version.
+/// A two-component `MAJOR.MINOR` version.
+///
+/// This version number is a subset of [`semver`]. In particular, it consists of the `MAJOR`
+/// and `MINOR` components, and leaves out the `PATCH` and additional labels for pre-release
+/// and build metadata.
+///
+/// If you require a version number which also includes the `PATCH` number,
+/// please see the [`FullVersion`] variant. For a [`semver`] compliant parser, you should use
+/// the `semver` [`crate`] instead.
+///
+/// [`semver`]: https://semver.org/spec/v2.0.0.html
+/// [`FullVersion`]: crate::FullVersion
+/// [`crate`]: https://crates.io/crates/semver
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct CoreVersion {
     /// A `major` version is incremented when backwards incompatible changes are made to a public
@@ -15,6 +27,17 @@ pub struct CoreVersion {
     /// When the version number is considered an *unstable initial development version*, it may also
     /// be incremented for backwards incompatible changes.
     pub minor: u64,
+}
+
+impl CoreVersion {
+    /// Instantiate a two component, version number with `MAJOR` and `MINOR` components.
+    ///
+    /// See [`CoreVersion`] for more.
+    ///
+    /// [`CoreVersion`]: crate::CoreVersion
+    pub fn new(major: u64, minor: u64) -> Self {
+        Self { major, minor }
+    }
 }
 
 impl From<(u64, u64)> for CoreVersion {
