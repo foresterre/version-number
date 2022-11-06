@@ -2,7 +2,7 @@ use crate::CoreVersion;
 use std::fmt;
 
 /// A three-component `major.minor.patch` version.
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FullVersion {
     /// A `major` version is incremented when backwards incompatible changes are made to a public
     /// API.
@@ -89,5 +89,69 @@ mod tests {
         let converted = full.to_core_version_lossy();
 
         assert_eq!(CoreVersion { major: 1, minor: 2 }, converted)
+    }
+}
+
+#[cfg(test)]
+mod ord_tests {
+    use crate::FullVersion;
+    use std::cmp::Ordering;
+
+    #[yare::parameterized(
+        zero = { FullVersion { major: 0, minor: 0, patch: 0 }, FullVersion { major: 0, minor: 0, patch: 0 } },
+        ones = { FullVersion { major: 1, minor: 1, patch: 1 }, FullVersion { major: 1, minor: 1, patch: 1 } },
+    )]
+    fn equals(lhs: FullVersion, rhs: FullVersion) {
+        assert_eq!(lhs.cmp(&rhs), Ordering::Equal);
+    }
+
+    #[yare::parameterized(
+        major_by_1 = { FullVersion { major: 0, minor: 0, patch: 0 }, FullVersion { major: 1, minor: 0, patch: 0 } },
+        minor_by_1 = { FullVersion { major: 0, minor: 0, patch: 0 }, FullVersion { major: 0, minor: 1, patch: 0 } },
+        patch_by_1 = { FullVersion { major: 0, minor: 0, patch: 0 }, FullVersion { major: 0, minor: 0, patch: 1 } },
+    )]
+    fn less(lhs: FullVersion, rhs: FullVersion) {
+        assert_eq!(lhs.cmp(&rhs), Ordering::Less);
+    }
+
+    #[yare::parameterized(
+        major_by_1 = { FullVersion { major: 1, minor: 0, patch: 0 }, FullVersion { major: 0, minor: 0, patch: 0 } },
+        minor_by_1 = { FullVersion { major: 0, minor: 1, patch: 0 }, FullVersion { major: 0, minor: 0, patch: 0 } },
+        patch_by_1 = { FullVersion { major: 0, minor: 0, patch: 1 }, FullVersion { major: 0, minor: 0, patch: 0 } },
+    )]
+    fn greater(lhs: FullVersion, rhs: FullVersion) {
+        assert_eq!(lhs.cmp(&rhs), Ordering::Greater);
+    }
+}
+
+#[cfg(test)]
+mod partial_ord_tests {
+    use crate::FullVersion;
+    use std::cmp::Ordering;
+
+    #[yare::parameterized(
+        zero = { FullVersion { major: 0, minor: 0, patch: 0 }, FullVersion { major: 0, minor: 0, patch: 0 } },
+        ones = { FullVersion { major: 1, minor: 1, patch: 1 }, FullVersion { major: 1, minor: 1, patch: 1 } },
+    )]
+    fn equals(lhs: FullVersion, rhs: FullVersion) {
+        assert_eq!(lhs.partial_cmp(&rhs), Some(Ordering::Equal));
+    }
+
+    #[yare::parameterized(
+        major_by_1 = { FullVersion { major: 0, minor: 0, patch: 0 }, FullVersion { major: 1, minor: 0, patch: 0 } },
+        minor_by_1 = { FullVersion { major: 0, minor: 0, patch: 0 }, FullVersion { major: 0, minor: 1, patch: 0 } },
+        patch_by_1 = { FullVersion { major: 0, minor: 0, patch: 0 }, FullVersion { major: 0, minor: 0, patch: 1 } },
+    )]
+    fn less(lhs: FullVersion, rhs: FullVersion) {
+        assert_eq!(lhs.partial_cmp(&rhs), Some(Ordering::Less));
+    }
+
+    #[yare::parameterized(
+        major_by_1 = { FullVersion { major: 1, minor: 0, patch: 0 }, FullVersion { major: 0, minor: 0, patch: 0 } },
+        minor_by_1 = { FullVersion { major: 0, minor: 1, patch: 0 }, FullVersion { major: 0, minor: 0, patch: 0 } },
+        patch_by_1 = { FullVersion { major: 0, minor: 0, patch: 1 }, FullVersion { major: 0, minor: 0, patch: 0 } },
+    )]
+    fn greater(lhs: FullVersion, rhs: FullVersion) {
+        assert_eq!(lhs.partial_cmp(&rhs), Some(Ordering::Greater));
     }
 }
