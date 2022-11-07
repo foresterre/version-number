@@ -72,7 +72,6 @@ mod tests {
 
     #[yare::parameterized(
         zeros = { CoreVersion { major: 0, minor: 0 }, "0.0" },
-        zero_prefix = { CoreVersion { major: 01, minor: 02 }, "1.2" },
         non_zero = { CoreVersion { major: 1, minor: 2 }, "1.2" },
     )]
     fn display(core_version: CoreVersion, expected: &str) {
