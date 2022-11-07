@@ -15,7 +15,7 @@ use std::fmt;
 /// [`semver`]: https://semver.org/spec/v2.0.0.html
 /// [`CoreVersion`]: crate::CoreVersion
 /// [`crate`]: https://crates.io/crates/semver
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FullVersion {
     /// A `major` version is incremented when backwards incompatible changes are made to a public
     /// API.
