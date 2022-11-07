@@ -1,6 +1,10 @@
 use crate::CoreVersion;
 use std::fmt;
 
+pub use parser::Parser;
+
+mod parser;
+
 /// A three-component `MAJOR.MINOR.PATCH` version.
 ///
 /// This version number is a subset of [`semver`]. In particular, it consists of the `MAJOR`.

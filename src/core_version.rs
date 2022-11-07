@@ -1,5 +1,9 @@
 use std::fmt;
 
+pub use parser::Parser;
+
+mod parser;
+
 /// A two-component `MAJOR.MINOR` version.
 ///
 /// This version number is a subset of [`semver`]. In particular, it consists of the `MAJOR`
