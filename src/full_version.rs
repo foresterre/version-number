@@ -12,9 +12,17 @@ use std::fmt;
 ///
 /// For a [`semver`] compliant parser, you should use the `semver` [`crate`] instead.
 ///
+/// # Converting to a semver::Version
+///
+/// This version type may be converted to a [`semver::Version`] using the [`From`] trait, assuming
+/// the `semver` feature is enabled.
+///
+///
 /// [`semver`]: https://semver.org/spec/v2.0.0.html
 /// [`CoreVersion`]: crate::CoreVersion
 /// [`crate`]: https://crates.io/crates/semver
+/// [`semver::Version`]: https://docs.rs/semver/1/semver/struct.Version.html
+/// [`From`]: https://doc.rust-lang.org/std/convert/trait.From.html
 #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FullVersion {
     /// A `major` version is incremented when backwards incompatible changes are made to a public
@@ -55,6 +63,30 @@ impl FullVersion {
             major: self.major,
             minor: self.minor,
         }
+    }
+}
+
+#[cfg(feature = "semver")]
+impl From<FullVersion> for semver::Version {
+    /// Convert the given [`FullVersion`] to a [`semver::Version`].
+    ///
+    /// Requires the `semver` feature to be enabled.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use version_number::FullVersion;
+    ///
+    /// let version = FullVersion::new(1, 2, 3);
+    /// let converted: semver::Version = version.into();
+    ///
+    /// assert_eq!(converted, semver::Version::new(1, 2, 3));
+    /// ```
+    ///
+    /// [`FullVersion`]: crate::FullVersion
+    /// [`semver::Version`]: https://docs.rs/semver/1/semver/struct.Version.html
+    fn from(version: FullVersion) -> Self {
+        semver::Version::new(version.major, version.minor, version.patch)
     }
 }
 
