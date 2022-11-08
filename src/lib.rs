@@ -47,7 +47,7 @@ pub enum Error {
 
 /// A numbered version which is a two-component `major.minor` version number,
 /// or a three-component `major.minor.patch` version number.
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub enum Version {
     /// A two-component `major.minor` version.
     Core(CoreVersion),
@@ -114,6 +114,14 @@ impl Version {
             Self::Full(inner) => Some(inner.patch),
         }
     }
+
+    /// Check of which variant `self` is.
+    pub fn is(&self, variant: Variant) -> bool {
+        match self {
+            Version::Core(_) => matches!(variant, Variant::Core),
+            Version::Full(_) => matches!(variant, Variant::Full),
+        }
+    }
 }
 
 impl FromStr for Version {
@@ -144,5 +152,46 @@ impl From<(u64, u64)> for Version {
 impl From<(u64, u64, u64)> for Version {
     fn from(tuple: (u64, u64, u64)) -> Self {
         Self::Full(FullVersion::from(tuple))
+    }
+}
+
+/// Type used to indicate which variant of a [`Version`] is used.
+/// The options are [`Core`] for [`Version::Core`], and [`Full`] for [`Version::Full`].
+///
+/// [`Version`]: crate::Version
+/// [`Core`]: crate::Variant::Core
+/// [`Version::Core`]: crate::Version::Core
+/// [`Full`]: crate::Variant::Full
+/// [`Version::Full`]: crate::Version::Full
+#[derive(Copy, Clone, Debug)]
+pub enum Variant {
+    /// Indicates a [`Version::Core`] is used.
+    ///
+    /// [`Version::Core`]: crate::Version::Core
+    Core,
+    /// Indicates a [`Version::Full`] is used.
+    ///
+    /// [`Version::Full`]: crate::Version::Full
+    Full,
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{CoreVersion, FullVersion, Variant, Version};
+
+    #[test]
+    fn is_core_variant() {
+        let version = Version::Core(CoreVersion::new(0, 0));
+
+        assert!(version.is(Variant::Core));
+        assert!(!version.is(Variant::Full));
+    }
+
+    #[test]
+    fn is_full_variant() {
+        let version = Version::Full(FullVersion::new(0, 0, 0));
+
+        assert!(version.is(Variant::Full));
+        assert!(!version.is(Variant::Core));
     }
 }
