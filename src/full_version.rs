@@ -15,7 +15,7 @@ use std::fmt;
 /// [`semver`]: https://semver.org/spec/v2.0.0.html
 /// [`CoreVersion`]: crate::CoreVersion
 /// [`crate`]: https://crates.io/crates/semver
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FullVersion {
     /// A `major` version is incremented when backwards incompatible changes are made to a public
     /// API.
@@ -96,7 +96,6 @@ mod tests {
 
     #[yare::parameterized(
         zeros = { FullVersion { major: 0, minor: 0, patch: 0 }, "0.0.0" },
-        zero_prefix = { FullVersion { major: 01, minor: 02, patch: 03 }, "1.2.3" },
         non_zero = { FullVersion { major: 1, minor: 2, patch: 3 }, "1.2.3" },
     )]
     fn display(core_version: FullVersion, expected: &str) {
