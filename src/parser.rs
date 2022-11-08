@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests;
 
+mod builder;
+
 macro_rules! to_number {
     ($initial:expr) => {
         Ok(u64::from($initial - b'0'))
