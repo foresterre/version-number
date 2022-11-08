@@ -137,7 +137,7 @@ mod tests {
     }
 
     #[test]
-    fn convert_lossy() {
+    fn to_core_version_lossy() {
         let full = FullVersion {
             major: 1,
             minor: 2,
