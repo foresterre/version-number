@@ -30,12 +30,11 @@
 use std::fmt;
 use std::str::FromStr;
 
-pub use base_version::BaseVersion;
-pub use full_version::FullVersion;
+pub use version::BaseVersion;
+pub use version::FullVersion;
 
-mod base_version;
-mod full_version;
 mod parser;
+mod version;
 
 /// Top level errors for version-numbers.
 #[derive(Debug, thiserror::Error)]
