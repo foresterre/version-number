@@ -1,7 +1,7 @@
-use crate::CoreVersion;
+use crate::BaseVersion;
 use std::iter::Peekable;
 
-pub fn parse_core_version<I>(input: I) -> Result<CoreVersion, Error>
+pub fn parse_base_version<I>(input: I) -> Result<BaseVersion, Error>
 where
     I: IntoIterator<Item = u8>,
 {
@@ -12,7 +12,7 @@ where
     let minor = parse_component(input.by_ref())?;
     is_done(input.by_ref())?;
 
-    Ok(CoreVersion { major, minor })
+    Ok(BaseVersion { major, minor })
 }
 
 // pub fn parse_full_version<I: AsRef<str>>(_input: I) -> crate::FullVersion {
@@ -115,9 +115,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::parse_core_version;
+    use super::parse_base_version;
     use super::Error;
-    use crate::CoreVersion;
+    use crate::BaseVersion;
     use yare::parameterized;
 
     #[test]
@@ -132,9 +132,9 @@ mod tests {
         let input = input.as_bytes();
 
         // todo: accept both &u8 and u8
-        let parsed = parse_core_version(input.iter().cloned()).unwrap();
+        let parsed = parse_base_version(input.iter().cloned()).unwrap();
 
-        assert_eq!(CoreVersion::new(major, minor), parsed);
+        assert_eq!(BaseVersion::new(major, minor), parsed);
     }
 
     #[parameterized(
@@ -145,7 +145,7 @@ mod tests {
     fn rejected(input: &str, expected_err: Error) {
         let input = input.as_bytes();
 
-        let err = parse_core_version(input.iter().cloned()).unwrap_err();
+        let err = parse_base_version(input.iter().cloned()).unwrap_err();
 
         assert_eq!(err, expected_err);
     }

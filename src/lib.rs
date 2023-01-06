@@ -19,21 +19,21 @@
 //! In addition [`Version`] does not accept extra labels such as build parameters, which are
 //! an extension of the [`semver`] version number itself.
 //!
-//! In this crate, we call a two component `major.minor` version number a [`CoreVersion`], and
+//! In this crate, we call a two component `major.minor` version number a [`BaseVersion`], and
 //! we call a three component `major.minor.patch` version number a [`FullVersion`].
 //!
 //! [`semver`]: https://semver.org/spec/v2.0.0.html
 //! [`Version`]: crate::Version
-//! [`CoreVersion`]: crate::CoreVersion
+//! [`BaseVersion`]: crate::BaseVersion
 //! [`FullVersion`]: crate::FullVersion
 
 use std::fmt;
 use std::str::FromStr;
 
-pub use core_version::CoreVersion;
+pub use base_version::BaseVersion;
 pub use full_version::FullVersion;
 
-mod core_version;
+mod base_version;
 mod full_version;
 mod parser;
 
@@ -50,7 +50,7 @@ pub enum Error {
 #[derive(Clone, Debug, Hash, Eq, PartialEq)]
 pub enum Version {
     /// A two-component `major.minor` version.
-    Core(CoreVersion),
+    Base(BaseVersion),
     /// A three-component `major.minor.patch` version.
     Full(FullVersion),
 }
@@ -67,8 +67,8 @@ impl Version {
     }
 
     /// Create a new two-component `major.minor` version number.
-    pub fn new_core_version(major: u64, minor: u64) -> Self {
-        Self::Core(CoreVersion { major, minor })
+    pub fn new_base_version(major: u64, minor: u64) -> Self {
+        Self::Base(BaseVersion { major, minor })
     }
 
     /// Create a new three-component `major.minor.patch` version number.
@@ -86,7 +86,7 @@ impl Version {
     /// This is the leading component.
     pub fn major(&self) -> u64 {
         match self {
-            Self::Core(inner) => inner.major,
+            Self::Base(inner) => inner.major,
             Self::Full(inner) => inner.major,
         }
     }
@@ -97,7 +97,7 @@ impl Version {
     /// This is the middle component.
     pub fn minor(&self) -> u64 {
         match self {
-            Self::Core(inner) => inner.minor,
+            Self::Base(inner) => inner.minor,
             Self::Full(inner) => inner.minor,
         }
     }
@@ -110,7 +110,7 @@ impl Version {
     /// If it exists, it is the last component.
     pub fn patch(&self) -> Option<u64> {
         match self {
-            Self::Core(_) => None,
+            Self::Base(_) => None,
             Self::Full(inner) => Some(inner.patch),
         }
     }
@@ -118,7 +118,7 @@ impl Version {
     /// Check of which variant `self` is.
     pub fn is(&self, variant: Variant) -> bool {
         match self {
-            Version::Core(_) => matches!(variant, Variant::Core),
+            Version::Base(_) => matches!(variant, Variant::Base),
             Version::Full(_) => matches!(variant, Variant::Full),
         }
     }
@@ -137,7 +137,7 @@ impl FromStr for Version {
 impl fmt::Display for Version {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Core(inner) => fmt::Display::fmt(&inner, f),
+            Self::Base(inner) => fmt::Display::fmt(&inner, f),
             Self::Full(inner) => fmt::Display::fmt(&inner, f),
         }
     }
@@ -145,7 +145,7 @@ impl fmt::Display for Version {
 
 impl From<(u64, u64)> for Version {
     fn from(tuple: (u64, u64)) -> Self {
-        Self::Core(CoreVersion::from(tuple))
+        Self::Base(BaseVersion::from(tuple))
     }
 }
 
@@ -156,19 +156,19 @@ impl From<(u64, u64, u64)> for Version {
 }
 
 /// Type used to indicate which variant of a [`Version`] is used.
-/// The options are [`Core`] for [`Version::Core`], and [`Full`] for [`Version::Full`].
+/// The options are [`Base`] for [`Version::Base`], and [`Full`] for [`Version::Full`].
 ///
 /// [`Version`]: crate::Version
-/// [`Core`]: crate::Variant::Core
-/// [`Version::Core`]: crate::Version::Core
+/// [`Base`]: crate::Variant::Base
+/// [`Version::Base`]: crate::Version::Base
 /// [`Full`]: crate::Variant::Full
 /// [`Version::Full`]: crate::Version::Full
 #[derive(Copy, Clone, Debug)]
 pub enum Variant {
-    /// Indicates a [`Version::Core`] is used.
+    /// Indicates a [`Version::Base`] is used.
     ///
-    /// [`Version::Core`]: crate::Version::Core
-    Core,
+    /// [`Version::Base`]: crate::Version::Base
+    Base,
     /// Indicates a [`Version::Full`] is used.
     ///
     /// [`Version::Full`]: crate::Version::Full
@@ -177,13 +177,13 @@ pub enum Variant {
 
 #[cfg(test)]
 mod tests {
-    use crate::{CoreVersion, FullVersion, Variant, Version};
+    use crate::{BaseVersion, FullVersion, Variant, Version};
 
     #[test]
-    fn is_core_variant() {
-        let version = Version::Core(CoreVersion::new(0, 0));
+    fn is_base_variant() {
+        let version = Version::Base(BaseVersion::new(0, 0));
 
-        assert!(version.is(Variant::Core));
+        assert!(version.is(Variant::Base));
         assert!(!version.is(Variant::Full));
     }
 
@@ -192,6 +192,6 @@ mod tests {
         let version = Version::Full(FullVersion::new(0, 0, 0));
 
         assert!(version.is(Variant::Full));
-        assert!(!version.is(Variant::Core));
+        assert!(!version.is(Variant::Base));
     }
 }
