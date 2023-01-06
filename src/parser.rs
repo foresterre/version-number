@@ -2,6 +2,7 @@
 mod tests;
 
 mod builder;
+mod take_while_peekable;
 
 macro_rules! to_number {
     ($initial:expr) => {

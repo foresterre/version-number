@@ -1,3 +1,4 @@
+use super::take_while_peekable::TakeWhilePeekable;
 use crate::BaseVersion;
 use std::iter::Peekable;
 
@@ -65,53 +66,6 @@ pub fn is_done(input: &mut impl Iterator<Item = u8>) -> Result<(), Error> {
 }
 
 // -- todo: build builder again
-
-// -- impl details
-// We can't use take_while since it will consume the `.` token, for which we need to verify its
-// existence first. Since our version should always have a number component first, it is fine for
-// peekable to consume the first character, to store in the peekable iterator.
-
-trait TakeWhilePeekable<'peekable, I>: Iterator
-where
-    I: Iterator,
-{
-    fn take_while_peekable<P>(&'peekable mut self, pred: P) -> TakeWhilePeekableImpl<I, P>
-    where
-        P: FnMut(&Self::Item) -> bool;
-}
-
-struct TakeWhilePeekableImpl<'peekable, I, P>
-where
-    I: Iterator,
-{
-    iter: &'peekable mut Peekable<I>,
-    pred: P,
-}
-
-impl<'peekable, I> TakeWhilePeekable<'peekable, I> for Peekable<I>
-where
-    I: Iterator,
-{
-    fn take_while_peekable<P>(&'peekable mut self, pred: P) -> TakeWhilePeekableImpl<I, P>
-    where
-        P: FnMut(&Self::Item) -> bool,
-    {
-        TakeWhilePeekableImpl { iter: self, pred }
-    }
-}
-
-impl<'peekable, I, P> Iterator for TakeWhilePeekableImpl<'peekable, I, P>
-where
-    I: Iterator,
-    P: FnMut(&I::Item) -> bool,
-{
-    type Item = I::Item;
-
-    #[inline]
-    fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next_if(&mut self.pred)
-    }
-}
 
 #[cfg(test)]
 mod tests {
