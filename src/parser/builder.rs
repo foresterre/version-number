@@ -2,6 +2,47 @@ use crate::parser::component::{is_done, parse_component, parse_dot};
 use crate::parser::error::ParseError;
 use crate::{BaseVersion, FullVersion, Version};
 
+pub trait HasVersionOrEmpty {}
+impl HasVersionOrEmpty for () {}
+impl HasVersionOrEmpty for BaseVersion {}
+impl HasVersionOrEmpty for FullVersion {}
+
+pub trait HasVersion: HasVersionOrEmpty {}
+impl HasVersion for BaseVersion {}
+impl HasVersion for FullVersion {}
+
+pub struct Builder<Version: HasVersionOrEmpty = ()> {
+    version: Version,
+}
+
+impl Builder<()> {
+    pub fn new() -> Self {
+        Self { version: () }
+    }
+}
+
+impl<S: HasVersionOrEmpty> Builder<S> {
+    pub fn parse_base(self) -> Result<Builder<BaseVersion>, ParseError> {
+        todo!()
+    }
+
+    // pub fn parse_full(self) -> Result<Builder<FullVersion>, ParseError> {
+    //     todo!()
+    // }
+}
+
+impl Builder<BaseVersion> {
+    pub fn parse_full(self) -> Result<Builder<FullVersion>, ParseError> {
+        todo!()
+    }
+}
+
+impl<S: HasVersion> Builder<S> {
+    pub fn try_build(self) -> Result<Version, ParseError> {
+        todo!()
+    }
+}
+
 pub fn parse_base_version<I>(input: I) -> Result<BaseVersion, ParseError>
 where
     I: IntoIterator<Item = u8>,
