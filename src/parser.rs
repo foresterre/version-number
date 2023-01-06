@@ -2,6 +2,8 @@
 mod tests;
 
 mod builder;
+mod component;
+mod error;
 mod take_while_peekable;
 
 macro_rules! to_number {
