@@ -1,4 +1,4 @@
-use crate::parser::component::{is_done, maybe_can_continue, parse_component, parse_dot};
+use crate::parser::component::{is_done, parse_component, parse_dot, peek_is_dot};
 use crate::parser::error::ParseError;
 use crate::{BaseVersion, FullVersion, Version};
 use std::iter::Peekable;
@@ -144,7 +144,7 @@ impl<'p> Parser<'p, Unparsed> {
     pub fn parse(self) -> Result<Version, ParseError> {
         let mut parser = self.parse_base()?;
 
-        if maybe_can_continue(parser.iter.by_ref()) {
+        if peek_is_dot(parser.iter.by_ref()) {
             parser.parse_patch()?.finish()
         } else {
             parser.finish()
@@ -187,6 +187,20 @@ impl<'p> Parser<'p, ParsedBase> {
             state: ParsedFull { version },
             iter,
         })
+    }
+
+    /// Parses a `patch` component if it exists and returns a [`Version::Full`],
+    /// or if the input does not have a third component, returns the two component [`Version::Base`]
+    /// variant instead.
+    ///
+    /// Prefer [`Parser::parse`] over this method when possible, as this method clones the underlying
+    /// iterator to determine whether we do have additional content.
+    pub fn parse_patch_or_finish(self) -> Result<Version, ParseError> {
+        if peek_is_dot(self.iter.clone().by_ref()) {
+            self.finish()
+        } else {
+            self.parse_patch()?.finish()
+        }
     }
 
     /// Checks that there is no remaining input, and returns a [`Version`], which
