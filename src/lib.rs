@@ -30,6 +30,7 @@
 use std::fmt;
 use std::str::FromStr;
 
+pub use parser::builder::Parser;
 pub use version::BaseVersion;
 pub use version::FullVersion;
 

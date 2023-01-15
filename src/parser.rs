@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests;
 
-mod builder;
+pub mod builder;
 mod component;
 mod error;
 mod take_while_peekable;
