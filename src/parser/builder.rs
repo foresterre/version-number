@@ -1,46 +1,72 @@
 use crate::parser::component::{is_done, parse_component, parse_dot};
 use crate::parser::error::ParseError;
 use crate::{BaseVersion, FullVersion, Version};
+use std::iter::Peekable;
+use std::slice::Iter;
 
-pub trait HasVersionOrEmpty {}
-impl HasVersionOrEmpty for () {}
-impl HasVersionOrEmpty for BaseVersion {}
-impl HasVersionOrEmpty for FullVersion {}
-
-pub trait HasVersion: HasVersionOrEmpty {}
-impl HasVersion for BaseVersion {}
-impl HasVersion for FullVersion {}
-
-pub struct Builder<Version: HasVersionOrEmpty = ()> {
-    version: Version,
+struct Builder<S: ParsedState, I> {
+    state: S,
+    iter: I,
 }
 
-impl Builder<()> {
-    pub fn new() -> Self {
-        Self { version: () }
-    }
+struct Unparsed;
+struct ParsedBase {
+    version: BaseVersion,
+}
+struct ParsedFull {
+    version: FullVersion,
 }
 
-impl<S: HasVersionOrEmpty> Builder<S> {
-    pub fn parse_base(self) -> Result<Builder<BaseVersion>, ParseError> {
-        todo!()
-    }
+pub trait ParsedState {}
+impl ParsedState for Unparsed {}
+impl ParsedState for ParsedBase {}
+impl ParsedState for ParsedFull {}
 
-    // pub fn parse_full(self) -> Result<Builder<FullVersion>, ParseError> {
-    //     todo!()
-    // }
-}
-
-impl Builder<BaseVersion> {
-    pub fn parse_full(self) -> Result<Builder<FullVersion>, ParseError> {
+impl<S: ParsedState, I: Iterator<Item = u8>> Builder<S, I> {
+    fn from_bytes(bytes: &[u8]) -> Builder<Unparsed, Peekable<I>> {
         todo!()
     }
 }
 
-impl<S: HasVersion> Builder<S> {
-    pub fn try_build(self) -> Result<Version, ParseError> {
+impl<I: Iterator> Builder<Unparsed, I> {
+    fn parse_base(self) -> Builder<ParsedBase, I> {
         todo!()
     }
+
+    fn parse_full(self) -> Builder<ParsedFull, I> {
+        todo!()
+    }
+}
+
+impl<I: Iterator> Builder<ParsedBase, I> {
+    fn parse_full(self) -> Builder<ParsedFull, I> {
+        todo!()
+    }
+
+    fn try_build(self) -> Version {
+        todo!()
+    }
+}
+
+impl<I: Iterator> Builder<ParsedFull, I> {
+    fn try_build(self) -> Version {
+        todo!()
+    }
+}
+
+// TODO: typing experiment only
+fn parse_base() {
+    let builder = Builder::from_bytes("hello".as_bytes());
+    let base = builder.parse_base();
+    let output = base.try_build();
+}
+
+// TODO: typing experiment only
+fn parse_full() {
+    let builder = Builder::from_bytes("hello".as_bytes());
+    let base = builder.parse_base();
+    let full = base.parse_full();
+    let output = full.try_build();
 }
 
 pub fn parse_base_version<I>(input: I) -> Result<BaseVersion, ParseError>
