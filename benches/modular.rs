@@ -1,9 +1,9 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use version_number::parsers::modular::Parser as ModularParser;
-use version_number::parsers::original::Parser as StepperParser;
+use version_number::parsers::original::Parser as OriginalParser;
 
 fn current_parse(input: &str) {
-    let _ = StepperParser::from_slice(input.as_bytes()).parse();
+    let _ = OriginalParser::from_slice(input.as_bytes()).parse();
 }
 
 fn modular_parse(input: &str) {
