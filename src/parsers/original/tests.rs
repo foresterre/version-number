@@ -1,4 +1,4 @@
-use crate::parser::{ErrorReason, NumberError, Parser};
+use crate::parsers::original::{ErrorReason, NumberError, Parser};
 use crate::Version;
 
 #[test]
@@ -6,7 +6,7 @@ fn two_component() {
     let p = Parser::from_slice("123.456".as_bytes());
     let version = p.parse().unwrap();
 
-    assert_eq!(version, Version::new_core_version(123, 456))
+    assert_eq!(version, Version::new_base_version(123, 456))
 }
 
 #[test]

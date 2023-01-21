@@ -1,0 +1,24 @@
+name: "ci-benchmark"
+on:
+  pull_request:
+jobs:
+  benchmark:
+    name: benchmark
+    runs-on: ubuntu-18.04
+    steps:
+      - name: checkout_repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: install_rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+
+      - name: criterion_bench_compare
+        uses: boa-dev/criterion-compare-action@v3.2.4
+        with:
+          branchName: ${{ github.base_ref }}

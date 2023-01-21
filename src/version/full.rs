@@ -1,4 +1,4 @@
-use crate::CoreVersion;
+use crate::BaseVersion;
 use std::fmt;
 
 /// A three-component `MAJOR.MINOR.PATCH` version.
@@ -8,7 +8,7 @@ use std::fmt;
 /// metadata.
 ///
 /// If you require a version number which also discards the `PATCH` number,
-/// please see the [`CoreVersion`] variant.
+/// please see the [`BaseVersion`] variant.
 ///
 /// For a [`semver`] compliant parser, you should use the `semver` [`crate`] instead.
 ///
@@ -19,7 +19,7 @@ use std::fmt;
 ///
 ///
 /// [`semver`]: https://semver.org/spec/v2.0.0.html
-/// [`CoreVersion`]: crate::CoreVersion
+/// [`BaseVersion`]: crate::BaseVersion
 /// [`crate`]: https://crates.io/crates/semver
 /// [`semver::Version`]: https://docs.rs/semver/1/semver/struct.Version.html
 /// [`From`]: https://doc.rust-lang.org/std/convert/trait.From.html
@@ -55,11 +55,11 @@ impl FullVersion {
         }
     }
 
-    /// Convert this full version to a core version.
+    /// Convert this full version to a base version.
     ///
     /// This conversion is lossy because the `patch` value is lost upon conversion.
-    pub fn to_core_version_lossy(self) -> CoreVersion {
-        CoreVersion {
+    pub fn to_base_version_lossy(self) -> BaseVersion {
+        BaseVersion {
             major: self.major,
             minor: self.minor,
         }
@@ -108,7 +108,7 @@ impl fmt::Display for FullVersion {
 
 #[cfg(test)]
 mod tests {
-    use crate::{CoreVersion, FullVersion};
+    use crate::{BaseVersion, FullVersion};
 
     #[test]
     fn from_tuple() {
@@ -130,22 +130,22 @@ mod tests {
         zeros = { FullVersion { major: 0, minor: 0, patch: 0 }, "0.0.0" },
         non_zero = { FullVersion { major: 1, minor: 2, patch: 3 }, "1.2.3" },
     )]
-    fn display(core_version: FullVersion, expected: &str) {
-        let displayed = format!("{}", core_version);
+    fn display(base_version: FullVersion, expected: &str) {
+        let displayed = format!("{}", base_version);
 
         assert_eq!(&displayed, expected);
     }
 
     #[test]
-    fn to_core_version_lossy() {
+    fn to_base_version_lossy() {
         let full = FullVersion {
             major: 1,
             minor: 2,
             patch: 3,
         };
-        let converted = full.to_core_version_lossy();
+        let converted = full.to_base_version_lossy();
 
-        assert_eq!(CoreVersion { major: 1, minor: 2 }, converted)
+        assert_eq!(BaseVersion { major: 1, minor: 2 }, converted)
     }
 }
 

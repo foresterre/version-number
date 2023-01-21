@@ -12,7 +12,7 @@ keywords = ["version", "semver", "version-core", "semver-shorthand", "rust-versi
 categories = ["parser-implementations"]
 
 [package.metadata]
-msrv = "1.43.1"
+msrv = "1.51"
 
 [dependencies]
 semver = { version = "1", optional = true }
@@ -20,3 +20,11 @@ thiserror = "1"
 
 [dev-dependencies]
 yare = "1"
+criterion = "0.4"
+
+[lib]
+bench = false
+
+[[bench]]
+name = "modular"
+harness = false
