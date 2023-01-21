@@ -2,8 +2,8 @@ name: "ci-benchmark"
 on:
   pull_request:
 jobs:
-  fmt:
-    name: fmt
+  benchmark:
+    name: benchmark
     runs-on: ubuntu-18.04
     steps:
       - name: checkout_repository
