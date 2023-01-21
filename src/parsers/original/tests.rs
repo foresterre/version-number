@@ -1,4 +1,4 @@
-use crate::parser::{ErrorReason, NumberError, Parser};
+use crate::parsers::original::{ErrorReason, NumberError, Parser};
 use crate::Version;
 
 #[test]

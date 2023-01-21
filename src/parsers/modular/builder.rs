@@ -1,24 +1,56 @@
-use crate::parser::component::{is_done, parse_component, parse_dot, peek_is_dot};
-use crate::parser::error::ParseError;
+use super::component::{is_done, parse_component, parse_dot, peek_is_dot};
+use super::error::ParseError;
 use crate::{BaseVersion, FullVersion, Version};
 use std::iter::Peekable;
 use std::slice::Iter;
 
 // States
 
+/// A parser state of a _modular parser_.
+///
+/// This is the initial state.  
 #[derive(Debug)]
 pub struct Unparsed;
 
+/// A parser state of a _modular parser_.
+///
+/// When the parser has reached this state, a two component [`BaseVersion`]
+/// has been parsed, although no end-of-input check has taken place.
+///
+/// For example, given the hypothetical input `a.bc`, we are only aware that
+/// `a.b` is a valid two component version number, while the tokens `c` may be
+/// anything. In practice, the `c` tokens cannot be the complete set of available
+/// tokens because the component parsing implementation has to distinguish
+/// between the tokens in the component (i.e. the number) and those outside of
+/// it. This though, is only an implementation detail, and not a concern of the
+/// API.
 #[derive(Debug)]
 pub struct ParsedBase {
     version: BaseVersion,
 }
 
+/// A parser state of a _modular parser_.
+///
+/// When the parser has reached this state, a three component [`FullVersion`]
+/// has been parsed, although no end-of-input check has taken place.
+///
+/// For example, given the hypothetical input `a.b.cd`, we are only aware that
+/// `a.b.c` is a valid three component version number, while the tokens `d` may
+/// be anything. In practice, the `d` tokens cannot be the complete set of
+/// available tokens because the component parsing implementation has to
+/// distinguish between the tokens in the component (i.e. the number)
+/// and those outside of it. This though, is only an implementation detail,
+/// and not a concern of the API.
 #[derive(Debug)]
 pub struct ParsedFull {
     version: FullVersion,
 }
 
+/// A trait to restrict the state of the [`Parser`] to valid state instances.
+///
+/// Since this trait is public it can technically be implemented outside of this
+/// crate. Usually, this is not what you want though, although it may be useful
+/// for testing, which is why it's not sealed.
 pub trait ParsedState {}
 impl ParsedState for Unparsed {}
 impl ParsedState for ParsedBase {}
@@ -27,7 +59,7 @@ impl ParsedState for ParsedFull {}
 // Parser
 
 /// A parser which may be used to parse a [`Version`] or its discriminants ([`BaseVersion`] and
-/// [`FullVersion`]).
+/// [`FullVersion`]), incrementally.
 #[derive(Debug)]
 pub struct Parser<'p, S: ParsedState> {
     state: S,
@@ -40,7 +72,7 @@ impl<'p> Parser<'p, Unparsed> {
     /// # Example
     ///
     /// ```
-    /// use version_number::Parser;
+    /// use version_number::parsers::modular::Parser;
     /// let parser = Parser::from_bytes("1.0.0".as_bytes());
     /// ```
     pub fn from_bytes(bytes: &'p [u8]) -> Parser<'p, Unparsed> {
@@ -66,7 +98,9 @@ impl<'p> Parser<'p, Unparsed> {
     /// # Example
     ///
     /// ```
-    /// use version_number::{BaseVersion, Parser};
+    /// use version_number::BaseVersion;
+    /// use version_number::parsers::modular::{Parser};
+    ///
     /// let parser = Parser::from_bytes("1.2".as_bytes());
     ///
     /// let base = parser.parse_base().unwrap();
@@ -94,7 +128,8 @@ impl<'p> Parser<'p, Unparsed> {
     /// # Example
     ///
     /// ```
-    /// use version_number::{BaseVersion, FullVersion, Parser};
+    /// use version_number::{BaseVersion, FullVersion};
+    /// use version_number::parsers::modular::{Parser};
     /// let parser = Parser::from_bytes("1.2.3".as_bytes());
     ///
     /// let base = parser.parse_full().unwrap();
@@ -112,7 +147,9 @@ impl<'p> Parser<'p, Unparsed> {
     /// # Example 1
     ///
     /// ```
-    /// use version_number::{BaseVersion, FullVersion, Parser, Version};
+    /// use version_number::{BaseVersion, FullVersion, Version};
+    /// use version_number::parsers::modular::Parser;
+    ///
     /// let parser = Parser::from_bytes("1.2".as_bytes());
     ///
     /// let version = parser.parse();
@@ -123,7 +160,9 @@ impl<'p> Parser<'p, Unparsed> {
     /// # Example 2
     ///
     /// ```
-    /// use version_number::{FullVersion, Parser, Version};
+    /// use version_number::{FullVersion, Version};
+    /// use version_number::parsers::modular::Parser;
+    ///
     /// let parser = Parser::from_bytes("1.2.3".as_bytes());
     ///
     /// let version = parser.parse();
@@ -134,7 +173,9 @@ impl<'p> Parser<'p, Unparsed> {
     /// # Example 3
     ///
     /// ```
-    /// use version_number::{FullVersion, Parser, Version};
+    /// use version_number::{FullVersion, Version};
+    /// use version_number::parsers::modular::Parser;
+    ///
     /// let parser = Parser::from_bytes("1.2.".as_bytes());
     ///
     /// let version = parser.parse();
@@ -158,7 +199,9 @@ impl<'p> Parser<'p, ParsedBase> {
     /// # Example
     ///
     /// ```
-    /// use version_number::{FullVersion, Parser};
+    /// use version_number::{FullVersion};
+    /// use version_number::parsers::modular::Parser;
+    ///
     /// let input = "1.2.3";
     ///
     /// let parser = Parser::from_bytes(input.as_bytes());

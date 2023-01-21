@@ -30,11 +30,17 @@
 use std::fmt;
 use std::str::FromStr;
 
-pub use parser::builder::Parser;
+use crate::parsers::original;
+
 pub use version::BaseVersion;
 pub use version::FullVersion;
 
-mod parser;
+/// This crate contains multiple parsers.
+///
+/// In general, it's easiest to use the well tested [`parsers::original::Parser`], which is also used
+/// (currently) by [`Version::parse`].
+pub mod parsers;
+
 mod version;
 
 /// Top level errors for version-numbers.
@@ -42,7 +48,7 @@ mod version;
 pub enum Error {
     /// An error which specifies failure to parse a version number.
     #[error("{0}")]
-    ParseError(#[from] parser::Error),
+    ParseError(#[from] original::Error),
 }
 
 /// A numbered version which is a two-component `major.minor` version number,
@@ -61,7 +67,7 @@ impl Version {
     ///
     /// Returns a [`crate::Error::ParseError`] if it fails to parse.
     pub fn parse(input: &str) -> Result<Self, Error> {
-        parser::Parser::from(input.as_bytes())
+        original::Parser::from(input.as_bytes())
             .parse()
             .map_err(From::from)
     }
@@ -128,7 +134,7 @@ impl FromStr for Version {
     type Err = Error;
 
     fn from_str(input: &str) -> Result<Self, Error> {
-        parser::Parser::from_slice(input.as_bytes())
+        original::Parser::from_slice(input.as_bytes())
             .parse()
             .map_err(From::from)
     }

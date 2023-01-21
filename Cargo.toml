@@ -20,3 +20,8 @@ thiserror = "1"
 
 [dev-dependencies]
 yare = "1"
+criterion = "0.4"
+
+[[bench]]
+name = "modular"
+harness = false

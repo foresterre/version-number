@@ -1,5 +1,5 @@
-use crate::parser::error::ParseError;
-use crate::parser::take_while_peekable::TakeWhilePeekable;
+use crate::parsers::modular::error::ParseError;
+use crate::parsers::modular::take_while_peekable::TakeWhilePeekable;
 use std::iter::Peekable;
 
 /// Parse a single component of a version. A component is the number value which is separated by the
@@ -13,9 +13,7 @@ pub fn parse_component<'b>(
     input: &mut Peekable<impl Iterator<Item = &'b u8>>,
 ) -> Result<u64, ParseError> {
     input
-        .take_while_peekable(
-            |&tok| (b'0'..=b'9').contains(&tok), /* todo: check: manually unroll or optimized? */
-        )
+        .take_while_peekable(|&tok| (b'0'..=b'9').contains(&tok))
         .fold(
             Err(ParseError::NoInputForComponent),
             |state: Result<u64, ParseError>, next| {
