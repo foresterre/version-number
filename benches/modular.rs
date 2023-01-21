@@ -7,7 +7,7 @@ fn current_parse(input: &str) {
 }
 
 fn modular_parse(input: &str) {
-    let _ = ModularParser::from_bytes(input.as_bytes()).parse();
+    let _ = ModularParser::from_slice(input.as_bytes()).parse();
 }
 
 pub fn parse_benchmark(c: &mut Criterion) {

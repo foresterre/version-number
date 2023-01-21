@@ -73,9 +73,9 @@ impl<'p> Parser<'p, Unparsed> {
     ///
     /// ```
     /// use version_number::parsers::modular::Parser;
-    /// let parser = Parser::from_bytes("1.0.0".as_bytes());
+    /// let parser = Parser::from_slice("1.0.0".as_bytes());
     /// ```
-    pub fn from_bytes(bytes: &'p [u8]) -> Parser<'p, Unparsed> {
+    pub fn from_slice(bytes: &'p [u8]) -> Parser<'p, Unparsed> {
         let iter = bytes.into_iter();
 
         Parser {
@@ -101,7 +101,7 @@ impl<'p> Parser<'p, Unparsed> {
     /// use version_number::BaseVersion;
     /// use version_number::parsers::modular::{Parser};
     ///
-    /// let parser = Parser::from_bytes("1.2".as_bytes());
+    /// let parser = Parser::from_slice("1.2".as_bytes());
     ///
     /// let base = parser.parse_base().unwrap();
     ///
@@ -130,7 +130,7 @@ impl<'p> Parser<'p, Unparsed> {
     /// ```
     /// use version_number::{BaseVersion, FullVersion};
     /// use version_number::parsers::modular::{Parser};
-    /// let parser = Parser::from_bytes("1.2.3".as_bytes());
+    /// let parser = Parser::from_slice("1.2.3".as_bytes());
     ///
     /// let base = parser.parse_full().unwrap();
     ///
@@ -150,7 +150,7 @@ impl<'p> Parser<'p, Unparsed> {
     /// use version_number::{BaseVersion, FullVersion, Version};
     /// use version_number::parsers::modular::Parser;
     ///
-    /// let parser = Parser::from_bytes("1.2".as_bytes());
+    /// let parser = Parser::from_slice("1.2".as_bytes());
     ///
     /// let version = parser.parse();
     ///
@@ -163,7 +163,7 @@ impl<'p> Parser<'p, Unparsed> {
     /// use version_number::{FullVersion, Version};
     /// use version_number::parsers::modular::Parser;
     ///
-    /// let parser = Parser::from_bytes("1.2.3".as_bytes());
+    /// let parser = Parser::from_slice("1.2.3".as_bytes());
     ///
     /// let version = parser.parse();
     ///
@@ -176,7 +176,7 @@ impl<'p> Parser<'p, Unparsed> {
     /// use version_number::{FullVersion, Version};
     /// use version_number::parsers::modular::Parser;
     ///
-    /// let parser = Parser::from_bytes("1.2.".as_bytes());
+    /// let parser = Parser::from_slice("1.2.".as_bytes());
     ///
     /// let version = parser.parse();
     ///
@@ -204,7 +204,7 @@ impl<'p> Parser<'p, ParsedBase> {
     ///
     /// let input = "1.2.3";
     ///
-    /// let parser = Parser::from_bytes(input.as_bytes());
+    /// let parser = Parser::from_slice(input.as_bytes());
     /// let full = parser
     ///     .parse_base()
     ///     .unwrap()
@@ -312,7 +312,7 @@ mod tests_leading_zeros {
     )]
     fn accepted(input: &str, major: u64, minor: u64) {
         let input = input.as_bytes();
-        let parsed = Parser::from_bytes(input)
+        let parsed = Parser::from_slice(input)
             .parse_base()
             .and_then(|parser| parser.finish_base_version())
             .unwrap();
@@ -327,7 +327,7 @@ mod tests_leading_zeros {
     )]
     fn rejected(input: &str, expected_err: ParseError) {
         let input = input.as_bytes();
-        let err = Parser::from_bytes(input)
+        let err = Parser::from_slice(input)
             .parse_base()
             .and_then(|parser| parser.finish_base_version())
             .unwrap_err();
@@ -351,7 +351,7 @@ mod tests_parser_base {
         ones = { "1.1", 1, 1 },
     )]
     fn accepted(input: &str, major: u64, minor: u64) {
-        let parser = Parser::from_bytes(input.as_bytes());
+        let parser = Parser::from_slice(input.as_bytes());
 
         let base = parser.parse_base().unwrap();
         let version = base.inner_version();
@@ -365,7 +365,7 @@ mod tests_parser_base {
     #[test]
     fn rejected_on_no_input() {
         let input = "";
-        let parser = Parser::from_bytes(input.as_bytes());
+        let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
         assert_eq!(err, ParseError::NoInputForComponent);
@@ -374,7 +374,7 @@ mod tests_parser_base {
     #[test]
     fn rejected_on_no_input2() {
         let input = "1.";
-        let parser = Parser::from_bytes(input.as_bytes());
+        let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
         assert_eq!(err, ParseError::NoInputForComponent);
@@ -384,12 +384,12 @@ mod tests_parser_base {
     fn rejected_on_overflow() {
         // u64::MAX is accepted
         let input = format!("{}.{}5", u64::MAX, 1844674407370955161_u64);
-        let parser = Parser::from_bytes(input.as_bytes());
+        let parser = Parser::from_slice(input.as_bytes());
         assert!(parser.parse_base().is_ok());
 
         // but u64::MAX+1 overflows
         let input = format!("{}6.0", 1844674407370955161_u64);
-        let parser = Parser::from_bytes(input.as_bytes());
+        let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
         assert_eq!(err, ParseError::Overflow);
@@ -398,7 +398,7 @@ mod tests_parser_base {
     #[test]
     fn rejected_on_separator_expected() {
         let input = "1";
-        let parser = Parser::from_bytes(input.as_bytes());
+        let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
         assert_eq!(err, ParseError::ExpectedSeparator);
@@ -407,7 +407,7 @@ mod tests_parser_base {
     #[test]
     fn rejected_on_eoi_expected() {
         let input = "1.0.0";
-        let parser = Parser::from_bytes(input.as_bytes());
+        let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap().finish().unwrap_err();
 
         assert_eq!(err, ParseError::ExpectedEOI);
@@ -416,7 +416,7 @@ mod tests_parser_base {
     #[test]
     fn rejected_on_leading_zero_not_allowed() {
         let input = "1.01";
-        let parser = Parser::from_bytes(input.as_bytes());
+        let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
         assert_eq!(err, ParseError::LeadingZeroNotAllowed);
@@ -429,7 +429,7 @@ mod tests_parser_base {
         in_second_component_2 = { "9.00" },
     )]
     fn rejected_on_leading_zero_not_allowed(input: &str) {
-        let parser = Parser::from_bytes(input.as_bytes());
+        let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
         assert_eq!(err, ParseError::LeadingZeroNotAllowed);

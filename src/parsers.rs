@@ -30,7 +30,7 @@
 //! let two_component_version = "1.64";
 //!
 //! let original_parser = original::Parser::from_slice(two_component_version.as_bytes());
-//! let modular_parser = modular::Parser::from_bytes(two_component_version.as_bytes());
+//! let modular_parser = modular::Parser::from_slice(two_component_version.as_bytes());
 //!
 //! let original_parsed = original_parser.parse().unwrap();
 //! let modular_parsed = modular_parser.parse().unwrap();
