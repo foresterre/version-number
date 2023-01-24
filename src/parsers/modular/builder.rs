@@ -288,6 +288,18 @@ impl<'p> Parser<'p, ParsedFull> {
         Ok(Version::Full(state.version))
     }
 
+    /// Checks that there is no remaining input, and returns a [`FullVersion`].
+    ///
+    /// When there is remaining input, this method will return a [`ParseError::ExpectedEOI`]
+    /// instead.
+    pub fn finish_full_version(self) -> Result<FullVersion, ParseError> {
+        let Self { mut iter, state } = self;
+
+        is_done(iter.by_ref())?;
+
+        Ok(state.version)
+    }
+
     /// Returns the so far successfully parsed version.
     ///
     /// **NB:** Unless the end of input has been reached, this version may not be valid.

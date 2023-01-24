@@ -1,3 +1,4 @@
+/// Errors which may be returned during parsing, by the _modular parser_.
 #[derive(Debug, Eq, PartialEq)]
 pub enum ParseError {
     /// Expected input token(s) for currently being parsed token, but got nothing.
