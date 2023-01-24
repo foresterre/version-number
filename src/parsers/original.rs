@@ -26,7 +26,7 @@ pub struct OriginalParser;
 impl ParseVersion for OriginalParser {
     type Error = Error;
 
-    fn parse_version<B: AsRef<[u8]>>(&self, input: B) -> Result<Version, Self::Error> {
+    fn parse_version<B: AsRef<[u8]>>(input: B) -> Result<Version, Self::Error> {
         let parser = Parser::from_slice(input.as_ref());
 
         parser.parse()
@@ -36,7 +36,7 @@ impl ParseVersion for OriginalParser {
 impl ParseBase for OriginalParser {
     type Error = Error;
 
-    fn parse_base<B: AsRef<[u8]>>(&self, input: B) -> Result<BaseVersion, Self::Error> {
+    fn parse_base<B: AsRef<[u8]>>(input: B) -> Result<BaseVersion, Self::Error> {
         let parser = Parser::from_slice(input.as_ref());
 
         parser.parse().and_then(|v| match v {
@@ -54,7 +54,7 @@ impl ParseBase for OriginalParser {
 impl ParseFull for OriginalParser {
     type Error = Error;
 
-    fn parse_full<B: AsRef<[u8]>>(&self, input: B) -> Result<FullVersion, Self::Error> {
+    fn parse_full<B: AsRef<[u8]>>(input: B) -> Result<FullVersion, Self::Error> {
         let parser = Parser::from_slice(input.as_ref());
 
         parser.parse().and_then(|v| match v {

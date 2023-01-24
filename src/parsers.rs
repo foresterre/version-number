@@ -56,7 +56,7 @@ pub trait ParseVersion {
     /// If the version type is known in advance, or you require a specifically
     /// a base- or full version, you may instead use [`ParseBase::parse_base`]
     /// or [`ParseFull::parse_full`].
-    fn parse_version<B: AsRef<[u8]>>(&self, input: B) -> Result<Version, Self::Error>;
+    fn parse_version<B: AsRef<[u8]>>(input: B) -> Result<Version, Self::Error>;
 }
 
 /// Parse a UTF-8 slice of bytes to a [`BaseVersion`].
@@ -68,7 +68,7 @@ pub trait ParseBase {
     ///
     /// If you don't know, or care, whether the version consists of two or three components,
     /// you may instead use [`ParseVersion::parse_version`].
-    fn parse_base<B: AsRef<[u8]>>(&self, input: B) -> Result<BaseVersion, Self::Error>;
+    fn parse_base<B: AsRef<[u8]>>(input: B) -> Result<BaseVersion, Self::Error>;
 }
 
 /// Parse a UTF-8 slice of bytes to a [`FullVersion`].
@@ -80,5 +80,22 @@ pub trait ParseFull {
     ///
     /// If you don't know, or care, whether the version consists of two or three components,
     /// you may instead use [`ParseVersion::parse_version`].
-    fn parse_full<B: AsRef<[u8]>>(&self, input: B) -> Result<FullVersion, Self::Error>;
+    fn parse_full<B: AsRef<[u8]>>(input: B) -> Result<FullVersion, Self::Error>;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dynamic() {
+        let input = "1.22.33";
+        let expected = Version::new_full_version(1, 22, 33);
+
+        let original = <original::OriginalParser as ParseVersion>::parse_version(input).unwrap();
+        assert_eq!(original, expected.clone());
+
+        let modular = <modular::ModularParser as ParseVersion>::parse_version(input).unwrap();
+        assert_eq!(modular, expected);
+    }
 }

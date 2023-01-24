@@ -29,7 +29,7 @@ pub struct ModularParser;
 impl ParseVersion for ModularParser {
     type Error = ParseError;
 
-    fn parse_version<B: AsRef<[u8]>>(&self, input: B) -> Result<Version, Self::Error> {
+    fn parse_version<B: AsRef<[u8]>>(input: B) -> Result<Version, Self::Error> {
         let parser = Parser::from_slice(input.as_ref());
 
         parser.parse()
@@ -39,7 +39,7 @@ impl ParseVersion for ModularParser {
 impl ParseBase for ModularParser {
     type Error = ParseError;
 
-    fn parse_base<B: AsRef<[u8]>>(&self, input: B) -> Result<BaseVersion, Self::Error> {
+    fn parse_base<B: AsRef<[u8]>>(input: B) -> Result<BaseVersion, Self::Error> {
         let parser = Parser::from_slice(input.as_ref());
 
         parser
@@ -51,7 +51,7 @@ impl ParseBase for ModularParser {
 impl ParseFull for ModularParser {
     type Error = ParseError;
 
-    fn parse_full<B: AsRef<[u8]>>(&self, input: B) -> Result<FullVersion, Self::Error> {
+    fn parse_full<B: AsRef<[u8]>>(input: B) -> Result<FullVersion, Self::Error> {
         let parser = Parser::from_slice(input.as_ref());
 
         parser
