@@ -40,5 +40,45 @@
 //!
 // TODO: list use-cases, advantages and disadvantages
 
+use crate::{BaseVersion, FullVersion, Version};
+
 pub mod modular;
 pub mod original;
+
+/// Parse a UTF-8 slice of bytes to a [`Version`].
+pub trait ParseVersion {
+    /// Specific error type of the implementing parser.
+    type Error;
+
+    /// Parse a UTF-8 formatted input buffer, `input` to a [`Version`].
+    /// This version may be a [`BaseVersion`], or a [`FullVersion`].
+    ///
+    /// If the version type is known in advance, or you require a specifically
+    /// a base- or full version, you may instead use [`ParseBase::parse_base`]
+    /// or [`ParseFull::parse_full`].
+    fn parse_version<B: AsRef<[u8]>>(&self, input: B) -> Result<Version, Self::Error>;
+}
+
+/// Parse a UTF-8 slice of bytes to a [`BaseVersion`].
+pub trait ParseBase {
+    /// Specific error type of the implementing parser.
+    type Error;
+
+    /// Parse a UTF-8 formatted input buffer, `input` to a [`BaseVersion`].
+    ///
+    /// If you don't know, or care, whether the version consists of two or three components,
+    /// you may instead use [`ParseVersion::parse_version`].
+    fn parse_base<B: AsRef<[u8]>>(&self, input: B) -> Result<BaseVersion, Self::Error>;
+}
+
+/// Parse a UTF-8 slice of bytes to a [`FullVersion`].
+pub trait ParseFull {
+    /// Specific error type of the implementing parser.
+    type Error;
+
+    /// Parse a UTF-8 formatted input buffer, `input` to a [`FullVersion`].
+    ///
+    /// If you don't know, or care, whether the version consists of two or three components,
+    /// you may instead use [`ParseVersion::parse_version`].
+    fn parse_full<B: AsRef<[u8]>>(&self, input: B) -> Result<FullVersion, Self::Error>;
+}
