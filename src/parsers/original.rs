@@ -5,8 +5,8 @@
 //!
 //! [`crate::parsers`]
 
-use crate::parsers::{ParseBase, ParseFull, ParseVersion};
-use crate::{BaseVersion, FullVersion, Version};
+use crate::parsers::{BaseVersionParser, FullVersionParser, VersionParser};
+use crate::{BaseVersion, FullVersion, ParserError, Version};
 pub use error::{Error, ErrorReason, NumberError};
 pub use parser::Parser;
 
@@ -21,48 +21,49 @@ mod tests;
 /// You can also use the parser directly using [`original::Parser`].
 ///
 /// [`original::Parser`]: Parser
+#[derive(Debug)]
 pub struct OriginalParser;
 
-impl ParseVersion for OriginalParser {
-    type Error = Error;
-
-    fn parse_version<B: AsRef<[u8]>>(input: B) -> Result<Version, Self::Error> {
+impl VersionParser for OriginalParser {
+    fn parse_version<B: AsRef<[u8]>>(&self, input: B) -> Result<Version, ParserError> {
         let parser = Parser::from_slice(input.as_ref());
 
-        parser.parse()
+        parser.parse().map_err(|_err| ParserError::Todo)
     }
 }
 
-impl ParseBase for OriginalParser {
-    type Error = Error;
-
-    fn parse_base<B: AsRef<[u8]>>(input: B) -> Result<BaseVersion, Self::Error> {
+impl BaseVersionParser for OriginalParser {
+    fn parse_base<B: AsRef<[u8]>>(&self, input: B) -> Result<BaseVersion, ParserError> {
         let parser = Parser::from_slice(input.as_ref());
 
-        parser.parse().and_then(|v| match v {
-            Version::Base(b) => Ok(b),
-            Version::Full(f) => Err(Error::from_parser(
-                &parser,
-                ErrorReason::ExpectedEndOfInput {
-                    extra_input: format!(".{}", f.patch).into_bytes(),
-                },
-            )),
-        })
+        parser
+            .parse()
+            .and_then(|v| match v {
+                Version::Base(b) => Ok(b),
+                Version::Full(f) => Err(Error::from_parser(
+                    &parser,
+                    ErrorReason::ExpectedEndOfInput {
+                        extra_input: format!(".{}", f.patch).into_bytes(),
+                    },
+                )),
+            })
+            .map_err(|_err| ParserError::Todo)
     }
 }
 
-impl ParseFull for OriginalParser {
-    type Error = Error;
-
-    fn parse_full<B: AsRef<[u8]>>(input: B) -> Result<FullVersion, Self::Error> {
+impl FullVersionParser for OriginalParser {
+    fn parse_full<B: AsRef<[u8]>>(&self, input: B) -> Result<FullVersion, ParserError> {
         let parser = Parser::from_slice(input.as_ref());
 
-        parser.parse().and_then(|v| match v {
-            Version::Base(_) => Err(Error::from_parser(
-                &parser,
-                ErrorReason::UnexpectedEndOfInput,
-            )),
-            Version::Full(f) => Ok(f),
-        })
+        parser
+            .parse()
+            .and_then(|v| match v {
+                Version::Base(_) => Err(Error::from_parser(
+                    &parser,
+                    ErrorReason::UnexpectedEndOfInput,
+                )),
+                Version::Full(f) => Ok(f),
+            })
+            .map_err(|_err| ParserError::Todo)
     }
 }

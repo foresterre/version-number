@@ -32,8 +32,9 @@ use std::str::FromStr;
 
 use crate::parsers::original;
 
-pub use version::BaseVersion;
-pub use version::FullVersion;
+pub use error::ParserError;
+pub use parsers::{BaseVersionParser, FullVersionParser, VersionParser};
+pub use version::{BaseVersion, FullVersion};
 
 /// This crate contains multiple parsers.
 ///
@@ -41,6 +42,7 @@ pub use version::FullVersion;
 /// (currently) by [`Version::parse`].
 pub mod parsers;
 
+mod error;
 mod version;
 
 /// Top level errors for version-numbers.
