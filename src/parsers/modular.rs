@@ -8,12 +8,12 @@
 use crate::parsers::{ParseBase, ParseFull, ParseVersion};
 use crate::{BaseVersion, FullVersion, Version};
 
-pub use builder::{ParsedBase, ParsedFull, ParsedState, Parser, Unparsed};
 pub use error::ParseError;
+pub use parser::{ParsedBase, ParsedFull, ParsedState, Parser, Unparsed};
 
-mod builder;
 mod component;
 mod error;
+mod parser;
 mod take_while_peekable;
 
 /// A convenience interface to the modular parser.
