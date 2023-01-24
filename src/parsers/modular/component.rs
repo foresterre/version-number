@@ -13,7 +13,7 @@ pub fn parse_component<'b>(
     input: &mut Peekable<impl Iterator<Item = &'b u8>>,
 ) -> Result<u64, ParseError> {
     input
-        .take_while_peekable(|&tok| (b'0'..=b'9').contains(&tok))
+        .take_while_peekable(|&tok| (b'0'..=b'9').contains(tok))
         .fold(
             Err(ParseError::NoInputForComponent),
             |state: Result<u64, ParseError>, next| {
@@ -54,7 +54,7 @@ pub fn parse_dot<'b>(input: &mut impl Iterator<Item = &'b u8>) -> Result<(), Par
 /// Consumes the next element of the iterator, and returns `Ok(())` if there isn't any next value,
 /// or `Err(ParseError::ExpectedEOI)` if there is.
 pub fn is_done<'b>(input: &mut impl Iterator<Item = &'b u8>) -> Result<(), ParseError> {
-    if let None = input.next() {
+    if input.next().is_none() {
         Ok(())
     } else {
         Err(ParseError::ExpectedEOI)

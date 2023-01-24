@@ -76,7 +76,7 @@ impl<'p> Parser<'p, Unparsed> {
     /// let parser = Parser::from_slice("1.0.0".as_bytes());
     /// ```
     pub fn from_slice(bytes: &'p [u8]) -> Parser<'p, Unparsed> {
-        let iter = bytes.into_iter();
+        let iter = bytes.iter();
 
         Parser {
             state: Unparsed,
