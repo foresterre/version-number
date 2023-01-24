@@ -20,9 +20,9 @@ impl Error {
 }
 
 impl Error {
-    pub(crate) fn from_parser(slice: &Parser<'_>, reason: ErrorReason) -> Self {
+    pub(crate) fn from_parser(parser: &Parser<'_>, reason: ErrorReason) -> Self {
         Self {
-            input: String::from_utf8_lossy(slice.slice).to_string(),
+            input: String::from_utf8_lossy(parser.slice).to_string(),
             cursor: None,
             reason,
         }
