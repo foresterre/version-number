@@ -9,11 +9,17 @@
 //! [`original::Parser::parse`] method, which acts as an index pointing to the
 //! next token to be parsed.
 //!
+//! It can be used to parse two- or three-component `major.minor(.patch)` versions,
+//! where the patch version may or may not be present.
+//!
 //! ## Modular
 //!
 //! The [`modular::Parser`] has an API which is based on the _type state_ pattern.
 //! Internally it uses a `Peekable` iterator over bytes (`u8`).
 //! The modular parser can parse a version incrementally.
+//!
+//! It may be used to parse either a two component `major.minor` version, or a three component
+//! `major.minor.patch` version, or both.
 //!
 //! # Example
 //!
@@ -38,7 +44,6 @@
 //! assert_eq!(original_parsed, modular_parsed );
 //! ```
 //!
-// TODO: list use-cases, advantages and disadvantages
 
 use crate::{BaseVersion, FullVersion, Version};
 
