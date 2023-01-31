@@ -13,7 +13,7 @@ Examples of two- respectively three component version numbers are `1.51` and `1.
 An example where this version type is found, is the `package.rust-version` field in the Cargo manifest (which crate authors use
 to set the MSRV).
 
-We call a two component `major.minor` version number, such as `1.51`, a **Core Version**, and a three component
+We call a two component `major.minor` version number, such as `1.51`, a **Base Version**, and a three component
 `major.minor.patch` version number, such as `1.7.0`, a **Full Version**.
 
 ### Add as a dependency
@@ -33,9 +33,9 @@ version-number = "0.2"
 use version_number::Version;
 
 fn main() {
-    let core = Version::parse("1.27").unwrap();
-    println!("Two component version: {}", core);
-  
+    let base = Version::parse("1.27").unwrap();
+    println!("Two component version: {}", base);
+
     let full = Version::parse("1.27.0").unwrap();
     println!("Three component version: {}", full);
 }
