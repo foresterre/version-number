@@ -1,6 +1,8 @@
+use crate::ParserError;
+
 /// Errors which may be returned during parsing, by the _modular parser_.
 #[derive(Debug, Eq, PartialEq)]
-pub enum ParseError {
+pub enum ModularParserError {
     /// Expected input token(s) for currently being parsed token, but got nothing.
     NoInputForComponent,
     /// Each component has a max value of [`u64::MAX`].
@@ -11,4 +13,10 @@ pub enum ParseError {
     ExpectedEOI,
     /// A number component should be 0 or start with 1-9.
     LeadingZeroNotAllowed,
+}
+
+impl From<ModularParserError> for ParserError {
+    fn from(value: ModularParserError) -> Self {
+        todo!()
+    }
 }

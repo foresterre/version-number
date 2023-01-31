@@ -1,4 +1,4 @@
-use crate::parsers::modular::error::ParseError;
+use crate::parsers::modular::error::ModularParserError;
 use crate::parsers::modular::take_while_peekable::TakeWhilePeekable;
 use std::iter::Peekable;
 
@@ -11,21 +11,21 @@ use std::iter::Peekable;
 /// For example, the values `0`, `1`, `39`, `90` are all valid, while `00`, `01`, `09273` are not.
 pub fn parse_component<'b>(
     input: &mut Peekable<impl Iterator<Item = &'b u8>>,
-) -> Result<u64, ParseError> {
+) -> Result<u64, ModularParserError> {
     input
         .take_while_peekable(|&tok| (b'0'..=b'9').contains(tok))
         .fold(
-            Err(ParseError::NoInputForComponent),
-            |state: Result<u64, ParseError>, next| {
+            Err(ModularParserError::NoInputForComponent),
+            |state: Result<u64, ModularParserError>, next| {
                 let next = u64::from(next - b'0');
 
                 match state {
-                    Ok(0) => Err(ParseError::LeadingZeroNotAllowed),
+                    Ok(0) => Err(ModularParserError::LeadingZeroNotAllowed),
                     Ok(value) => value
                         .checked_mul(10)
                         .and_then(|lhs| lhs.checked_add(next))
-                        .ok_or(ParseError::Overflow),
-                    Err(ParseError::NoInputForComponent) => Ok(next),
+                        .ok_or(ModularParserError::Overflow),
+                    Err(ModularParserError::NoInputForComponent) => Ok(next),
                     Err(err) => Err(err),
                 }
             },
@@ -43,20 +43,20 @@ pub fn peek_is_dot<'b>(input: &mut Peekable<impl Iterator<Item = &'b u8>>) -> bo
 /// If this holds, then the value `Ok(())` will be returned.
 /// If there is no next character, i.e. the iterator returns `None`, or the token returned is not   
 /// the character `.`, a `Err(ParseError::ExpectedSeparator)` will be returned.
-pub fn parse_dot<'b>(input: &mut impl Iterator<Item = &'b u8>) -> Result<(), ParseError> {
+pub fn parse_dot<'b>(input: &mut impl Iterator<Item = &'b u8>) -> Result<(), ModularParserError> {
     input
         .next()
         .filter(|&&token| token == b'.')
         .map(|_| ())
-        .ok_or(ParseError::ExpectedSeparator)
+        .ok_or(ModularParserError::ExpectedSeparator)
 }
 
 /// Consumes the next element of the iterator, and returns `Ok(())` if there isn't any next value,
 /// or `Err(ParseError::ExpectedEOI)` if there is.
-pub fn is_done<'b>(input: &mut impl Iterator<Item = &'b u8>) -> Result<(), ParseError> {
+pub fn is_done<'b>(input: &mut impl Iterator<Item = &'b u8>) -> Result<(), ModularParserError> {
     if input.next().is_none() {
         Ok(())
     } else {
-        Err(ParseError::ExpectedEOI)
+        Err(ModularParserError::ExpectedEOI)
     }
 }

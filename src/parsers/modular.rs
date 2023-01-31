@@ -8,7 +8,7 @@
 use crate::parsers::{BaseVersionParser, FullVersionParser, VersionParser};
 use crate::{BaseVersion, FullVersion, ParserError, Version};
 
-pub use error::ParseError;
+pub use error::ModularParserError;
 pub use parser::{ParsedBase, ParsedFull, ParsedState, Parser, Unparsed};
 
 mod component;
@@ -31,7 +31,7 @@ impl VersionParser for ModularParser {
     fn parse_version<B: AsRef<[u8]>>(&self, input: B) -> Result<Version, ParserError> {
         let parser = Parser::from_slice(input.as_ref());
 
-        parser.parse().map_err(|_err| ParserError::Todo)
+        parser.parse().map_err(ParserError::from)
     }
 }
 
@@ -42,7 +42,7 @@ impl BaseVersionParser for ModularParser {
         parser
             .parse_base()
             .and_then(|parser| parser.finish_base_version())
-            .map_err(|_err| ParserError::Todo)
+            .map_err(ParserError::from)
     }
 }
 
@@ -53,6 +53,6 @@ impl FullVersionParser for ModularParser {
         parser
             .parse_full()
             .and_then(|parser| parser.finish_full_version())
-            .map_err(|_err| ParserError::Todo)
+            .map_err(ParserError::from)
     }
 }

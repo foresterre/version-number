@@ -1,4 +1,6 @@
 use super::*;
+use crate::parsers::error::ExpectedError;
+use crate::parsers::NumericError;
 
 /// The top-level error type for an _orignal parser_.
 #[derive(Clone, Debug, thiserror::Error)]
@@ -6,20 +8,20 @@ use super::*;
     "Unable to parse '{input}' to a version number: {reason}{}",
     self.fmt()
 )]
-pub struct Error {
+pub struct OriginalParserError {
     input: String,
     cursor: Option<usize>,
     reason: ErrorReason,
 }
 
-impl Error {
+impl OriginalParserError {
     /// The reason why the given input could not be parsed to a [`crate::Version`].
     pub fn reason(&self) -> &ErrorReason {
         &self.reason
     }
 }
 
-impl Error {
+impl OriginalParserError {
     pub(crate) fn from_parser(parser: &Parser<'_>, reason: ErrorReason) -> Self {
         Self {
             input: String::from_utf8_lossy(parser.slice).to_string(),
@@ -87,30 +89,33 @@ pub enum ErrorReason {
         extra_input: Vec<u8>,
     },
 
-    /// When this error variant is returned, a specific token was expected, but
-    /// a different token was present. The `expected` field shows which token
-    /// was expected, while the `got` field shows the token read.
+    /// When this error variant is returned, the '.' token was expected, but
+    /// a different token was present, or the end-of-input reached.
+    ///
+    /// The `got` field shows the token read.
     #[error(
-        "Expected '{}', but got '{}'",
-        char::from(*.expected),
-        char::from(*.got)
+        "Expected the dot-separator '.', but got '{}'",
+        .got.map(|c| String::from(char::from(c))).unwrap_or_else(|| "EOI".to_string()),
     )]
-    ExpectedToken {
-        /// The expected token.
-        expected: u8,
-        /// The actually present token.
-        got: u8,
+    ExpectedSeparator {
+        /// Token read, or `None` if we unexpectedly got the end-of-input.
+        got: Option<u8>,
+    },
+
+    /// When this error variant is returned, a numeric token was expected, but
+    /// a different token was present, or the end-of-input reached.
+    #[error(
+        "Expected 0-9, but got '{}'",
+        .got.map(|c| String::from(char::from(c))).unwrap_or_else(|| "EOI".to_string()),
+    )]
+    ExpectedNumericToken {
+        /// Token read, or `None` if we unexpectedly got the end-of-input.
+        got: Option<u8>,
     },
 
     /// An error variant for faults when parsing and constructing a number.
     #[error("{0}")]
     NumberError(#[from] NumberError),
-
-    /// When this error variant is returned, the parser still expected some next
-    /// token, but no such token could be read by the parser anymore, because
-    /// there were no remaining tokens to be parsed.
-    #[error("Unexpected end of input")]
-    UnexpectedEndOfInput,
 }
 
 /// An error type for faults relating to parsing and constructing numbers.
@@ -126,4 +131,33 @@ pub enum NumberError {
     /// Each number component consists of a 64 bits unsigned integer.
     #[error("Overflow: Found number component which would be larger than the maximum supported number (max={})", u64::MAX)]
     Overflow,
+}
+
+impl From<OriginalParserError> for ParserError {
+    fn from(value: OriginalParserError) -> Self {
+        match value.reason {
+            ErrorReason::NumberError(e) => match e {
+                NumberError::LeadingZero => ParserError::Numeric(NumericError::LeadingZero),
+                NumberError::Overflow => ParserError::Numeric(NumericError::Overflow),
+            },
+            ErrorReason::ExpectedEndOfInput { extra_input } => {
+                ParserError::Expected(ExpectedError::EndOfInput {
+                    at: value.cursor,
+                    got: char::from(extra_input[0]),
+                })
+            }
+            ErrorReason::ExpectedSeparator { got } => {
+                ParserError::Expected(ExpectedError::Separator {
+                    at: value.cursor,
+                    got: got.map(char::from),
+                })
+            }
+            ErrorReason::ExpectedNumericToken { got } => {
+                ParserError::Expected(ExpectedError::Numeric {
+                    at: value.cursor,
+                    got: got.map(char::from),
+                })
+            }
+        }
+    }
 }

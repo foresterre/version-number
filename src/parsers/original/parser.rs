@@ -1,4 +1,4 @@
-use crate::parsers::original::{Error, ErrorReason, NumberError};
+use crate::parsers::original::{ErrorReason, NumberError, OriginalParserError};
 
 macro_rules! to_number {
     ($initial:expr) => {
@@ -103,7 +103,7 @@ impl<'slice> Parser<'slice> {
     /// let version = parser.parse().unwrap();
     ///
     /// assert_eq!(version, Version::new_base_version(1, 2));
-    pub fn parse(&self) -> Result<crate::Version, Error> {
+    pub fn parse(&self) -> Result<crate::Version, OriginalParserError> {
         let mut cursor = 0;
 
         let first = self.parse_number(&mut cursor)?;
@@ -131,7 +131,7 @@ impl<'slice> Parser<'slice> {
             }));
         }
 
-        Err(Error::from_parser_with_cursor(
+        Err(OriginalParserError::from_parser_with_cursor(
             self,
             cursor,
             ErrorReason::ExpectedEndOfInput {
@@ -140,7 +140,7 @@ impl<'slice> Parser<'slice> {
         ))
     }
 
-    fn parse_number(&self, cursor: &mut usize) -> Result<NumberConstructor, Error> {
+    fn parse_number(&self, cursor: &mut usize) -> Result<NumberConstructor, OriginalParserError> {
         let mut value = NumberComponent::new();
 
         while let Some(&b) = self.slice.get(*cursor) {
@@ -150,34 +150,35 @@ impl<'slice> Parser<'slice> {
 
             value
                 .insert_digit(b)
-                .map_err(|error| Error::from_parser(self, error.into()))?;
+                .map_err(|error| OriginalParserError::from_parser(self, error.into()))?;
 
             *cursor += 1;
         }
 
         value.get().ok_or_else(|| {
-            Error::from_parser_with_cursor(self, *cursor, ErrorReason::UnexpectedEndOfInput)
+            OriginalParserError::from_parser_with_cursor(
+                self,
+                *cursor,
+                ErrorReason::ExpectedNumericToken { got: None },
+            )
         })
     }
 
-    fn parse_dot(&self, cursor: &mut usize) -> Result<(), Error> {
+    fn parse_dot(&self, cursor: &mut usize) -> Result<(), OriginalParserError> {
         match self.slice.get(*cursor) {
             Some(&b) if b == b'.' => {
                 *cursor += 1;
                 Ok(())
             }
-            Some(&b) => Err(Error::from_parser_with_cursor(
+            Some(&b) => Err(OriginalParserError::from_parser_with_cursor(
                 self,
                 *cursor,
-                ErrorReason::ExpectedToken {
-                    expected: b'.',
-                    got: b,
-                },
+                ErrorReason::ExpectedSeparator { got: Some(b) },
             )),
-            None => Err(Error::from_parser_with_cursor(
+            None => Err(OriginalParserError::from_parser_with_cursor(
                 self,
                 *cursor,
-                ErrorReason::UnexpectedEndOfInput,
+                ErrorReason::ExpectedSeparator { got: None },
             )),
         }
     }

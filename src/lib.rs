@@ -32,8 +32,7 @@ use std::str::FromStr;
 
 use crate::parsers::original;
 
-pub use error::ParserError;
-pub use parsers::{BaseVersionParser, FullVersionParser, VersionParser};
+pub use parsers::{BaseVersionParser, FullVersionParser, ParserError, VersionParser};
 pub use version::{BaseVersion, FullVersion};
 
 /// This crate contains multiple parsers.
@@ -42,7 +41,6 @@ pub use version::{BaseVersion, FullVersion};
 /// (currently) by [`Version::parse`].
 pub mod parsers;
 
-mod error;
 mod version;
 
 /// Top level errors for version-numbers.
@@ -50,7 +48,7 @@ mod version;
 pub enum Error {
     /// An error which specifies failure to parse a version number.
     #[error("{0}")]
-    ParseError(#[from] original::Error),
+    ParserError(#[from] ParserError),
 }
 
 /// A numbered version which is a two-component `major.minor` version number,
@@ -67,11 +65,11 @@ impl Version {
     /// Parse a two- or three-component, `major.minor` or `major.minor.patch` respectively,
     /// version number from a given input.
     ///
-    /// Returns a [`crate::Error::ParseError`] if it fails to parse.
+    /// Returns a [`Error::ParserError`] if it fails to parse.
     pub fn parse(input: &str) -> Result<Self, Error> {
         original::Parser::from(input.as_bytes())
             .parse()
-            .map_err(From::from)
+            .map_err(|e| Error::from(Into::<ParserError>::into(e)))
     }
 
     /// Create a new two-component `major.minor` version number.
@@ -138,7 +136,7 @@ impl FromStr for Version {
     fn from_str(input: &str) -> Result<Self, Error> {
         original::Parser::from_slice(input.as_bytes())
             .parse()
-            .map_err(From::from)
+            .map_err(|e| Error::from(Into::<ParserError>::into(e)))
     }
 }
 

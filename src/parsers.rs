@@ -40,8 +40,11 @@
 //!
 // TODO: list use-cases, advantages and disadvantages
 
-use crate::{BaseVersion, FullVersion, ParserError, Version};
+use crate::{BaseVersion, FullVersion, Version};
 
+pub use error::{NumericError, ParserError};
+
+pub mod error;
 pub mod modular;
 pub mod original;
 
