@@ -1,5 +1,5 @@
 use super::component::{is_done, parse_component, parse_dot, peek_is_dot};
-use super::error::ParseError;
+use super::error::ModularParserError;
 use crate::{BaseVersion, FullVersion, Version};
 use std::iter::Peekable;
 use std::slice::Iter;
@@ -76,7 +76,7 @@ impl<'p> Parser<'p, Unparsed> {
     /// let parser = Parser::from_slice("1.0.0".as_bytes());
     /// ```
     pub fn from_slice(bytes: &'p [u8]) -> Parser<'p, Unparsed> {
-        let iter = bytes.into_iter();
+        let iter = bytes.iter();
 
         Parser {
             state: Unparsed,
@@ -107,7 +107,7 @@ impl<'p> Parser<'p, Unparsed> {
     ///
     /// assert_eq!(base.inner_version(), &BaseVersion::new(1, 2));
     /// ```
-    pub fn parse_base(self) -> Result<Parser<'p, ParsedBase>, ParseError> {
+    pub fn parse_base(self) -> Result<Parser<'p, ParsedBase>, ModularParserError> {
         let Self { mut iter, .. } = self;
 
         let major = parse_component(iter.by_ref())?;
@@ -136,7 +136,7 @@ impl<'p> Parser<'p, Unparsed> {
     ///
     /// assert_eq!(base.inner_version(), &FullVersion::new(1, 2, 3));
     /// ```
-    pub fn parse_full(self) -> Result<Parser<'p, ParsedFull>, ParseError> {
+    pub fn parse_full(self) -> Result<Parser<'p, ParsedFull>, ModularParserError> {
         let parser = self.parse_base()?;
         parser.parse_patch()
     }
@@ -182,7 +182,7 @@ impl<'p> Parser<'p, Unparsed> {
     ///
     /// assert!(version.is_err());
     /// ```
-    pub fn parse(self) -> Result<Version, ParseError> {
+    pub fn parse(self) -> Result<Version, ModularParserError> {
         let mut parser = self.parse_base()?;
 
         if peek_is_dot(parser.iter.by_ref()) {
@@ -213,7 +213,7 @@ impl<'p> Parser<'p, ParsedBase> {
     ///
     /// assert_eq!(full.inner_version(), &FullVersion::new(1, 2, 3));
     /// ```
-    pub fn parse_patch(self) -> Result<Parser<'p, ParsedFull>, ParseError> {
+    pub fn parse_patch(self) -> Result<Parser<'p, ParsedFull>, ModularParserError> {
         let Self {
             mut iter,
             state: ParsedBase {
@@ -238,7 +238,7 @@ impl<'p> Parser<'p, ParsedBase> {
     ///
     /// Prefer [`Parser::parse`] over this method when possible, as this method clones the underlying
     /// iterator to determine whether we do have additional content.
-    pub fn parse_patch_or_finish(self) -> Result<Version, ParseError> {
+    pub fn parse_patch_or_finish(self) -> Result<Version, ModularParserError> {
         if peek_is_dot(self.iter.clone().by_ref()) {
             self.finish()
         } else {
@@ -249,17 +249,17 @@ impl<'p> Parser<'p, ParsedBase> {
     /// Checks that there is no remaining input, and returns a [`Version`], which
     /// wraps the parsed base version.
     ///
-    /// When there is remaining input, this method will return a [`ParseError::ExpectedEOI`]
+    /// When there is remaining input, this method will return a [`ModularParserError::ExpectedEOI`]
     /// instead.
-    pub fn finish(self) -> Result<Version, ParseError> {
+    pub fn finish(self) -> Result<Version, ModularParserError> {
         self.finish_base_version().map(Version::Base)
     }
 
     /// Checks that there is no remaining input, and returns a [`BaseVersion`].
     ///
-    /// When there is remaining input, this method will return a [`ParseError::ExpectedEOI`]
+    /// When there is remaining input, this method will return a [`ModularParserError::ExpectedEOI`]
     /// instead.
-    pub fn finish_base_version(self) -> Result<BaseVersion, ParseError> {
+    pub fn finish_base_version(self) -> Result<BaseVersion, ModularParserError> {
         let Self { mut iter, state } = self;
 
         is_done(iter.by_ref())?;
@@ -279,13 +279,25 @@ impl<'p> Parser<'p, ParsedFull> {
     /// Checks that there is no remaining input, and returns a [`Version`], which
     /// wraps the parsed base version.
     ///
-    /// When there is remaining input, this method will return a [`ParseError::ExpectedEOI`]
-    pub fn finish(self) -> Result<Version, ParseError> {
+    /// When there is remaining input, this method will return a [`ModularParserError::ExpectedEOI`]
+    pub fn finish(self) -> Result<Version, ModularParserError> {
         let Self { mut iter, state } = self;
 
         is_done(iter.by_ref())?;
 
         Ok(Version::Full(state.version))
+    }
+
+    /// Checks that there is no remaining input, and returns a [`FullVersion`].
+    ///
+    /// When there is remaining input, this method will return a [`ModularParserError::ExpectedEOI`]
+    /// instead.
+    pub fn finish_full_version(self) -> Result<FullVersion, ModularParserError> {
+        let Self { mut iter, state } = self;
+
+        is_done(iter.by_ref())?;
+
+        Ok(state.version)
     }
 
     /// Returns the so far successfully parsed version.
@@ -299,6 +311,7 @@ impl<'p> Parser<'p, ParsedFull> {
 #[cfg(test)]
 mod tests_leading_zeros {
     use super::*;
+    use crate::parsers::modular::NumberError;
     use crate::BaseVersion;
     use yare::parameterized;
 
@@ -321,11 +334,11 @@ mod tests_leading_zeros {
     }
 
     #[parameterized(
-        no_leading_zero_component_0 = { "00.0", ParseError::LeadingZeroNotAllowed },
-        no_leading_zero_component_1 = { "01.0", ParseError::LeadingZeroNotAllowed },
-        no_leading_zero_component_2 = { "1.01", ParseError::LeadingZeroNotAllowed },
+        no_leading_zero_component_0 = { "00.0", ModularParserError::NumberError(NumberError::LeadingZero) },
+        no_leading_zero_component_1 = { "01.0", ModularParserError::NumberError(NumberError::LeadingZero) },
+        no_leading_zero_component_2 = { "1.01", ModularParserError::NumberError(NumberError::LeadingZero) },
     )]
-    fn rejected(input: &str, expected_err: ParseError) {
+    fn rejected(input: &str, expected_err: ModularParserError) {
         let input = input.as_bytes();
         let err = Parser::from_slice(input)
             .parse_base()
@@ -339,6 +352,7 @@ mod tests_leading_zeros {
 #[cfg(test)]
 mod tests_parser_base {
     use super::*;
+    use crate::parsers::modular::NumberError;
     use crate::BaseVersion;
     use yare::parameterized;
 
@@ -368,7 +382,7 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ParseError::NoInputForComponent);
+        assert_eq!(err, ModularParserError::ExpectedNumericToken { got: None });
     }
 
     #[test]
@@ -377,7 +391,7 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ParseError::NoInputForComponent);
+        assert_eq!(err, ModularParserError::ExpectedNumericToken { got: None });
     }
 
     #[test]
@@ -392,7 +406,7 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ParseError::Overflow);
+        assert_eq!(err, ModularParserError::NumberError(NumberError::Overflow));
     }
 
     #[test]
@@ -401,7 +415,7 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ParseError::ExpectedSeparator);
+        assert_eq!(err, ModularParserError::ExpectedSeparator { got: None });
     }
 
     #[test]
@@ -410,7 +424,7 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap().finish().unwrap_err();
 
-        assert_eq!(err, ParseError::ExpectedEOI);
+        assert_eq!(err, ModularParserError::ExpectedEndOfInput { got: b'.' });
     }
 
     #[test]
@@ -419,7 +433,10 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ParseError::LeadingZeroNotAllowed);
+        assert_eq!(
+            err,
+            ModularParserError::NumberError(NumberError::LeadingZero)
+        );
     }
 
     #[parameterized(
@@ -432,6 +449,9 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ParseError::LeadingZeroNotAllowed);
+        assert_eq!(
+            err,
+            ModularParserError::NumberError(NumberError::LeadingZero)
+        );
     }
 }
