@@ -93,7 +93,7 @@ mod tests {
 
         let original = original::OriginalParser;
         let v = original.parse_version(input).unwrap();
-        assert_eq!(v, expected.clone());
+        assert_eq!(v, expected);
 
         let modular = modular::ModularParser;
         let v = modular.parse_version(input).unwrap();
@@ -110,7 +110,7 @@ mod tests {
         let expected = Version::new_full_version(1, 22, 33);
 
         let v = example_generic(input, original::OriginalParser);
-        assert_eq!(v, expected.clone());
+        assert_eq!(v, expected);
 
         let v = example_generic(input, modular::ModularParser);
         assert_eq!(v, expected);
