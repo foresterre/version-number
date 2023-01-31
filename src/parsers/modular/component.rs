@@ -1,4 +1,4 @@
-use crate::parsers::modular::error::ModularParserError;
+use crate::parsers::modular::error::{ModularParserError, NumberError};
 use crate::parsers::modular::take_while_peekable::TakeWhilePeekable;
 use std::iter::Peekable;
 
@@ -15,17 +15,17 @@ pub fn parse_component<'b>(
     input
         .take_while_peekable(|&tok| (b'0'..=b'9').contains(tok))
         .fold(
-            Err(ModularParserError::NoInputForComponent),
+            Err(ModularParserError::ExpectedNumericToken { got: None }),
             |state: Result<u64, ModularParserError>, next| {
                 let next = u64::from(next - b'0');
 
                 match state {
-                    Ok(0) => Err(ModularParserError::LeadingZeroNotAllowed),
+                    Ok(0) => Err(ModularParserError::NumberError(NumberError::LeadingZero)),
                     Ok(value) => value
                         .checked_mul(10)
                         .and_then(|lhs| lhs.checked_add(next))
-                        .ok_or(ModularParserError::Overflow),
-                    Err(ModularParserError::NoInputForComponent) => Ok(next),
+                        .ok_or(ModularParserError::NumberError(NumberError::Overflow)),
+                    Err(ModularParserError::ExpectedNumericToken { got: None }) => Ok(next),
                     Err(err) => Err(err),
                 }
             },
@@ -48,15 +48,14 @@ pub fn parse_dot<'b>(input: &mut impl Iterator<Item = &'b u8>) -> Result<(), Mod
         .next()
         .filter(|&&token| token == b'.')
         .map(|_| ())
-        .ok_or(ModularParserError::ExpectedSeparator)
+        .ok_or(ModularParserError::ExpectedSeparator { got: None })
 }
 
 /// Consumes the next element of the iterator, and returns `Ok(())` if there isn't any next value,
 /// or `Err(ParseError::ExpectedEOI)` if there is.
 pub fn is_done<'b>(input: &mut impl Iterator<Item = &'b u8>) -> Result<(), ModularParserError> {
-    if input.next().is_none() {
-        Ok(())
-    } else {
-        Err(ModularParserError::ExpectedEOI)
+    match input.next() {
+        Some(&token) => Err(ModularParserError::ExpectedEndOfInput { got: token }),
+        None => Ok(()),
     }
 }

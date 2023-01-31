@@ -8,7 +8,7 @@
 use crate::parsers::{BaseVersionParser, FullVersionParser, VersionParser};
 use crate::{BaseVersion, FullVersion, ParserError, Version};
 
-pub use error::ModularParserError;
+pub use error::{ModularParserError, NumberError};
 pub use parser::{ParsedBase, ParsedFull, ParsedState, Parser, Unparsed};
 
 mod component;

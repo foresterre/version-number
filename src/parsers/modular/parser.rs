@@ -311,6 +311,7 @@ impl<'p> Parser<'p, ParsedFull> {
 #[cfg(test)]
 mod tests_leading_zeros {
     use super::*;
+    use crate::parsers::modular::NumberError;
     use crate::BaseVersion;
     use yare::parameterized;
 
@@ -333,9 +334,9 @@ mod tests_leading_zeros {
     }
 
     #[parameterized(
-        no_leading_zero_component_0 = { "00.0", ModularParserError::LeadingZeroNotAllowed },
-        no_leading_zero_component_1 = { "01.0", ModularParserError::LeadingZeroNotAllowed },
-        no_leading_zero_component_2 = { "1.01", ModularParserError::LeadingZeroNotAllowed },
+        no_leading_zero_component_0 = { "00.0", ModularParserError::NumberError(NumberError::LeadingZero) },
+        no_leading_zero_component_1 = { "01.0", ModularParserError::NumberError(NumberError::LeadingZero) },
+        no_leading_zero_component_2 = { "1.01", ModularParserError::NumberError(NumberError::LeadingZero) },
     )]
     fn rejected(input: &str, expected_err: ModularParserError) {
         let input = input.as_bytes();
@@ -351,6 +352,7 @@ mod tests_leading_zeros {
 #[cfg(test)]
 mod tests_parser_base {
     use super::*;
+    use crate::parsers::modular::NumberError;
     use crate::BaseVersion;
     use yare::parameterized;
 
@@ -380,7 +382,7 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ModularParserError::NoInputForComponent);
+        assert_eq!(err, ModularParserError::ExpectedNumericToken { got: None });
     }
 
     #[test]
@@ -389,7 +391,7 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ModularParserError::NoInputForComponent);
+        assert_eq!(err, ModularParserError::ExpectedNumericToken { got: None });
     }
 
     #[test]
@@ -404,7 +406,7 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ModularParserError::Overflow);
+        assert_eq!(err, ModularParserError::NumberError(NumberError::Overflow));
     }
 
     #[test]
@@ -413,7 +415,7 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ModularParserError::ExpectedSeparator);
+        assert_eq!(err, ModularParserError::ExpectedSeparator { got: None });
     }
 
     #[test]
@@ -422,7 +424,7 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap().finish().unwrap_err();
 
-        assert_eq!(err, ModularParserError::ExpectedEOI);
+        assert_eq!(err, ModularParserError::ExpectedEndOfInput { got: b'.' });
     }
 
     #[test]
@@ -431,7 +433,10 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ModularParserError::LeadingZeroNotAllowed);
+        assert_eq!(
+            err,
+            ModularParserError::NumberError(NumberError::LeadingZero)
+        );
     }
 
     #[parameterized(
@@ -444,6 +449,9 @@ mod tests_parser_base {
         let parser = Parser::from_slice(input.as_bytes());
         let err = parser.parse_base().unwrap_err();
 
-        assert_eq!(err, ModularParserError::LeadingZeroNotAllowed);
+        assert_eq!(
+            err,
+            ModularParserError::NumberError(NumberError::LeadingZero)
+        );
     }
 }

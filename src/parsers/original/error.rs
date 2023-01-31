@@ -15,7 +15,7 @@ pub struct OriginalParserError {
 }
 
 impl OriginalParserError {
-    /// The reason why the given input could not be parsed to a [`crate::Version`].
+    /// The reason why the given input could not be parsed to a [`Version`].
     pub fn reason(&self) -> &ErrorReason {
         &self.reason
     }
@@ -72,7 +72,7 @@ impl OriginalParserError {
     }
 }
 
-/// Reasons for why a given input cannot be parsed to a [`crate::Version`].
+/// Reasons for why a given input cannot be parsed to a [`Version`].
 #[derive(Clone, Debug, thiserror::Error, Eq, PartialEq)]
 pub enum ErrorReason {
     /// When this error variant is returned, the parser expected that no more
@@ -114,7 +114,7 @@ pub enum ErrorReason {
     },
 
     /// An error variant for faults when parsing and constructing a number.
-    #[error("{0}")]
+    #[error(transparent)]
     NumberError(#[from] NumberError),
 }
 
