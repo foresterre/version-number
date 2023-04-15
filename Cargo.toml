@@ -13,6 +13,7 @@ categories = ["parser-implementations"]
 
 [package.metadata]
 msrv = "1.51"
+release.tag-name = "v{{version}}"
 
 [dependencies]
 semver = { version = "1", optional = true }
