@@ -5,7 +5,7 @@ description = "Two and three component 'major.minor' and 'major.minor.patch' ver
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/foresterre/version-number"
 
-version = "0.2.2"
+version = "0.3.0"
 edition = "2018"
 
 keywords = ["version", "semver", "version-core", "semver-shorthand", "rust-version"]
