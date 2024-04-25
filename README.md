@@ -20,14 +20,14 @@ We call a two component `major.minor` version number, such as `1.51`, a **Base V
 
 ### Add as a dependency
 
-To add `rust-version` as a dependency to your Rust project, you may run  `cargo add version-number`.
+To add `version-number` as a dependency to your Rust project, you may run  `cargo add version-number`.
 
-Alternatively, you may add the `version-number` crate manually to your Cargo manifest (i.e. `Cargo.toml`) as a
+Alternatively, you could add the `version-number` crate manually to your Cargo manifest (i.e. `Cargo.toml`) as a
 dependency:
 
 ```toml
 [dependencies]
-version-number = "0.2"
+version-number = "0.3"
 ```
 
 ### Usage
