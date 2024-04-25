@@ -1,5 +1,5 @@
 use crate::parsers::modular;
-use crate::{BaseVersion, ParserError};
+use crate::{BaseVersion, FullVersionParser, ParserError};
 use std::fmt;
 
 /// A three-component `MAJOR.MINOR.PATCH` version.
@@ -60,11 +60,7 @@ impl FullVersion {
     ///
     /// Returns a [`ParserError`] if it fails to parse.
     pub fn parse(input: &str) -> Result<Self, ParserError> {
-        modular::Parser::from_slice(input.as_bytes())
-            .parse_base()
-            .and_then(|parsed| parsed.parse_patch())
-            .and_then(|parsed| parsed.finish_full_version())
-            .map_err(ParserError::from)
+        modular::ModularParser.parse_full(input)
     }
 
     /// Convert this full version to a base version.
