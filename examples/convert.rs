@@ -1,4 +1,4 @@
-use version_number::{BaseVersion, FullVersion, Version};
+use version_number::{BaseVersion, FullVersion};
 
 fn main() {
     let original_base = BaseVersion::new(1, 2);

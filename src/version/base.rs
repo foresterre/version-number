@@ -51,13 +51,36 @@ impl BaseVersion {
     /// Convert this base version to a full version.
     ///
     /// This conversion is lossy because the `patch` value is not known to this BaseVersion, and
-    /// will initialized as `0`.
+    /// will initialize as `0`.
     pub fn to_full_version_lossy(self) -> FullVersion {
         FullVersion {
             major: self.major,
             minor: self.minor,
             patch: 0,
         }
+    }
+
+    /// Map a [`BaseVersion`] to `U`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use version_number::BaseVersion;
+    ///
+    /// // 🧑‍🔬
+    /// fn invert_version(v: BaseVersion) -> BaseVersion {
+    ///     BaseVersion::new(v.minor, v.major)
+    /// }
+    ///
+    /// let example = BaseVersion::new(1, 2);
+    ///
+    /// assert_eq!(example.map(invert_version), BaseVersion::new(2, 1));
+    /// ```
+    pub fn map<U, F>(self, fun: F) -> U
+    where
+        F: FnOnce(Self) -> U,
+    {
+        fun(self)
     }
 }
 
@@ -117,6 +140,14 @@ mod tests {
                 patch: 0,
             }
         )
+    }
+
+    #[test]
+    fn map() {
+        let version = BaseVersion::new(1, 2);
+        let mapped = version.map(|v| format!("Wowsies {}", v.major));
+
+        assert_eq!(mapped.as_str(), "Wowsies 1");
     }
 }
 

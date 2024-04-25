@@ -128,6 +128,34 @@ impl Version {
             Version::Full(_) => matches!(variant, Variant::Full),
         }
     }
+
+    /// Map a [`Version`] to `U`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use version_number::{BaseVersion, FullVersion, Version};
+    ///
+    /// // 🧑‍🔬
+    /// fn invert_version(v: Version) -> Version {
+    ///     match v {
+    ///         Version::Base(base) => Version::Base(BaseVersion::new(base.minor, base.major)),
+    ///         Version::Full(full) => Version::Full(FullVersion::new(full.patch, full.minor, full.major))
+    ///     }
+    /// }
+    ///
+    /// let base_example = Version::Base(BaseVersion::new(1, 2));
+    /// let full_example = Version::Full(FullVersion::new(1, 2, 3));
+    ///
+    /// assert_eq!(base_example.map(invert_version), Version::Base(BaseVersion::new(2, 1)));
+    /// assert_eq!(full_example.map(invert_version), Version::Full(FullVersion::new(3, 2, 1)));
+    /// ```
+    pub fn map<U, F>(self, fun: F) -> U
+    where
+        F: FnOnce(Self) -> U,
+    {
+        fun(self)
+    }
 }
 
 impl FromStr for Version {
@@ -199,5 +227,17 @@ mod tests {
 
         assert!(version.is(Variant::Full));
         assert!(!version.is(Variant::Base));
+    }
+
+    #[test]
+    fn map() {
+        let version = Version::Base(BaseVersion::new(0, 0));
+
+        let mapped = version.map(|v| match v {
+            Version::Base(base) => Version::Full(FullVersion::new(base.major, base.minor, 999)),
+            v => v,
+        });
+
+        assert_eq!(mapped, Version::Full(FullVersion::new(0, 0, 999)));
     }
 }
