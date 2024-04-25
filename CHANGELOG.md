@@ -5,6 +5,7 @@
 ### Added
 
 * Added `FullVersion::parse` convenience method
+* Added `BaseVersion::parse` convenience method
 
 ## [0.3.0]
 

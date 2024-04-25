@@ -1,4 +1,5 @@
-use crate::FullVersion;
+use crate::parsers::modular;
+use crate::{BaseVersionParser, FullVersion, ParserError};
 use std::fmt;
 
 /// A two-component `MAJOR.MINOR` version.
@@ -38,6 +39,13 @@ impl BaseVersion {
     /// [`BaseVersion`]: crate::BaseVersion
     pub fn new(major: u64, minor: u64) -> Self {
         Self { major, minor }
+    }
+
+    /// Parse a two component, `major.minor` version number from a given input.
+    ///
+    /// Returns a [`ParserError`] if it fails to parse.
+    pub fn parse(input: &str) -> Result<Self, ParserError> {
+        modular::ModularParser.parse_base(input)
     }
 
     /// Convert this base version to a full version.
@@ -169,5 +177,49 @@ mod partial_ord_tests {
     )]
     fn greater(lhs: BaseVersion, rhs: BaseVersion) {
         assert_eq!(lhs.partial_cmp(&rhs), Some(Ordering::Greater));
+    }
+}
+
+#[cfg(test)]
+mod parse_base {
+    use crate::parsers::error::ExpectedError;
+    use crate::parsers::NumericError;
+    use crate::{BaseVersion, ParserError};
+
+    #[test]
+    fn ok() {
+        let version = BaseVersion::parse("1.2").unwrap();
+
+        assert_eq!(version, BaseVersion::new(1, 2));
+    }
+
+    #[test]
+    fn err_on_major_only() {
+        let result = BaseVersion::parse("1");
+
+        assert!(matches!(
+            result.unwrap_err(),
+            ParserError::Expected(ExpectedError::Separator { .. })
+        ));
+    }
+
+    #[test]
+    fn err_on_not_finished() {
+        let result = BaseVersion::parse("1.2.3");
+
+        assert!(matches!(
+            result.unwrap_err(),
+            ParserError::Expected(ExpectedError::EndOfInput { .. })
+        ));
+    }
+
+    #[test]
+    fn err_on_starts_with_0() {
+        let result = BaseVersion::parse("1.02");
+
+        assert!(matches!(
+            result.unwrap_err(),
+            ParserError::Numeric(NumericError::LeadingZero)
+        ));
     }
 }
