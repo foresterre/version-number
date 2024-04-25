@@ -8,6 +8,7 @@
 * Added `BaseVersion::parse` convenience method
 * Added `Version::map` method
 * Added `BaseVersion::map` method
+* Added `FullVersion::map` method
 
 ## [0.3.0]
 

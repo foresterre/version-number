@@ -72,6 +72,29 @@ impl FullVersion {
             minor: self.minor,
         }
     }
+
+    /// Map a [`FullVersion`] to `U`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use version_number::FullVersion;
+    ///
+    /// // 🧑‍🔬
+    /// fn invert_version(v: FullVersion) -> FullVersion {
+    ///     FullVersion::new(v.patch, v.minor, v.major)
+    /// }
+    ///
+    /// let example = FullVersion::new(1, 2, 3);
+    ///
+    /// assert_eq!(example.map(invert_version), FullVersion::new(3, 2, 1));
+    /// ```
+    pub fn map<U, F>(self, fun: F) -> U
+    where
+        F: FnOnce(Self) -> U,
+    {
+        fun(self)
+    }
 }
 
 #[cfg(feature = "semver")]
@@ -154,6 +177,15 @@ mod tests {
         let converted = full.to_base_version_lossy();
 
         assert_eq!(BaseVersion { major: 1, minor: 2 }, converted)
+    }
+
+    #[test]
+    fn map() {
+        let version = BaseVersion::new(1, 2);
+        let mapped = version.map(|v| ("Everything is awesome", v.major, v.minor));
+
+        assert_eq!(mapped.1, 1);
+        assert_eq!(mapped.2, 2);
     }
 }
 
