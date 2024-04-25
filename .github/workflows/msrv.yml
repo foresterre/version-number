@@ -32,6 +32,7 @@ jobs:
       - name: run_cargo_msrv_on_verify_failure
         if: ${{ failure() }}
         run: cargo msrv --ignore-lockfile --output-format json -- cargo check
+
   msrv-with-semver:
     name: msrv
     runs-on: ubuntu-latest
