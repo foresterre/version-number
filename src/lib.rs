@@ -47,7 +47,7 @@ mod version;
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// An error which specifies failure to parse a version number.
-    #[error("{0}")]
+    #[error(transparent)]
     ParserError(#[from] ParserError),
 }
 

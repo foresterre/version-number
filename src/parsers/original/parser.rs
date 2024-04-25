@@ -166,7 +166,7 @@ impl<'slice> Parser<'slice> {
 
     fn parse_dot(&self, cursor: &mut usize) -> Result<(), OriginalParserError> {
         match self.slice.get(*cursor) {
-            Some(&b) if b == b'.' => {
+            Some(&b'.') => {
                 *cursor += 1;
                 Ok(())
             }

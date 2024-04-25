@@ -1,10 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+* Added `FullVersion::parse` convenience method
+
+## [0.3.0]
+
+### Added
+
+* Added modular parser, which can parse both the BaseVersion and FullVersions in incrementally.
+
+[0.3.0]: https://github.com/foresterre/version-number/releases/tag/v0.3.0
+
 ## [0.2.2]
 
 ### Fixed
 
-* Updated docs which still refered to accepting leading zeros, while they're now rejected
+* Updated docs which still referred to accepting leading zeros, while they're now rejected
 
 [0.2.2]: https://github.com/foresterre/version-number/releases/tag/v0.2.2
 
@@ -14,7 +28,6 @@
 
 [0.2.1]: https://github.com/foresterre/version-number/releases/tag/v0.2.1
 
-
 ## [0.2.0]
 
 ### Changed
@@ -22,7 +35,6 @@
 * Leading zeros are no longer allowed
 
 [0.2.0]: https://github.com/foresterre/version-number/releases/tag/v0.2.0
-
 
 ## [0.1.0]
 

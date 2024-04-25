@@ -9,27 +9,26 @@ use std::iter::Peekable;
 ///
 /// A component value must be `0`, or start with a token with value `1` up to and including `9`.
 /// For example, the values `0`, `1`, `39`, `90` are all valid, while `00`, `01`, `09273` are not.
+#[allow(clippy::manual_try_fold)]
 pub fn parse_component<'b>(
     input: &mut Peekable<impl Iterator<Item = &'b u8>>,
 ) -> Result<u64, ModularParserError> {
-    input
-        .take_while_peekable(|&tok| (b'0'..=b'9').contains(tok))
-        .fold(
-            Err(ModularParserError::ExpectedNumericToken { got: None }),
-            |state: Result<u64, ModularParserError>, next| {
-                let next = u64::from(next - b'0');
+    input.take_while_peekable(|&tok| tok.is_ascii_digit()).fold(
+        Err(ModularParserError::ExpectedNumericToken { got: None }),
+        |state: Result<u64, ModularParserError>, next| {
+            let next = u64::from(next - b'0');
 
-                match state {
-                    Ok(0) => Err(ModularParserError::NumberError(NumberError::LeadingZero)),
-                    Ok(value) => value
-                        .checked_mul(10)
-                        .and_then(|lhs| lhs.checked_add(next))
-                        .ok_or(ModularParserError::NumberError(NumberError::Overflow)),
-                    Err(ModularParserError::ExpectedNumericToken { got: None }) => Ok(next),
-                    Err(err) => Err(err),
-                }
-            },
-        )
+            match state {
+                Ok(0) => Err(ModularParserError::NumberError(NumberError::LeadingZero)),
+                Ok(value) => value
+                    .checked_mul(10)
+                    .and_then(|lhs| lhs.checked_add(next))
+                    .ok_or(ModularParserError::NumberError(NumberError::Overflow)),
+                Err(ModularParserError::ExpectedNumericToken { got: None }) => Ok(next),
+                Err(err) => Err(err),
+            }
+        },
+    )
 }
 
 /// Peeks at the next token in the iterator and checks whether the token is the `.` character.
