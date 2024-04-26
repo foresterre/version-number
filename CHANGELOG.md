@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.4.0]
+
 ### Added
 
 * Added `FullVersion::parse` convenience method
@@ -12,6 +14,8 @@
 * Added `Version::map_major` method
 * Added `Version::map_minor` method
 * Added `Version::map_patch` method
+
+[0.4.0]: https://github.com/foresterre/version-number/releases/tag/v0.4.0
 
 ## [0.3.0]
 
