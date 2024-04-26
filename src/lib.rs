@@ -150,11 +150,92 @@ impl Version {
     /// assert_eq!(base_example.map(invert_version), Version::Base(BaseVersion::new(2, 1)));
     /// assert_eq!(full_example.map(invert_version), Version::Full(FullVersion::new(3, 2, 1)));
     /// ```
+    #[inline]
     pub fn map<U, F>(self, fun: F) -> U
     where
         F: FnOnce(Self) -> U,
     {
         fun(self)
+    }
+
+    /// Map over the `major` version component of the [`Version`].
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use version_number::{BaseVersion, FullVersion, Version};
+    ///
+    /// let base_example = Version::Base(BaseVersion::new(0, 0));
+    /// let full_example = Version::Full(FullVersion::new(0, 0, 0));
+    ///
+    /// assert_eq!(base_example.map_major(|a| a + 1), Version::Base(BaseVersion::new(1, 0)));
+    /// assert_eq!(full_example.map_major(|a| a + 1), Version::Full(FullVersion::new(1, 0, 0)));
+    /// ```
+    #[inline]
+    pub fn map_major<F>(self, fun: F) -> Self
+    where
+        F: FnOnce(u64) -> u64,
+    {
+        self.map(|v| match v {
+            Self::Base(base) => Version::Base(BaseVersion::new(fun(base.major), base.minor)),
+            Self::Full(full) => {
+                Version::Full(FullVersion::new(fun(full.major), full.minor, full.patch))
+            }
+        })
+    }
+
+    /// Map over the `minor` version component of the [`Version`].
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use version_number::{BaseVersion, FullVersion, Version};
+    ///
+    /// let base_example = Version::Base(BaseVersion::new(0, 0));
+    /// let full_example = Version::Full(FullVersion::new(0, 0, 0));
+    ///
+    /// assert_eq!(base_example.map_minor(|a| a + 1), Version::Base(BaseVersion::new(0, 1)));
+    /// assert_eq!(full_example.map_minor(|a| a + 1), Version::Full(FullVersion::new(0, 1, 0)));
+    /// ```
+    #[inline]
+    pub fn map_minor<F>(self, fun: F) -> Self
+    where
+        F: FnOnce(u64) -> u64,
+    {
+        self.map(|v| match v {
+            Self::Base(base) => Version::Base(BaseVersion::new(base.major, fun(base.minor))),
+            Self::Full(full) => {
+                Version::Full(FullVersion::new(full.major, fun(full.minor), full.patch))
+            }
+        })
+    }
+
+    /// Map over the `patch` version component of the [`Version`].
+    /// If no `patch` version exists (in case the [`Version`] consists of two components),
+    /// then the original version is returned.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use version_number::{BaseVersion, FullVersion, Version};
+    ///
+    /// let base_example = Version::Base(BaseVersion::new(0, 0));
+    /// let full_example = Version::Full(FullVersion::new(0, 0, 0));
+    ///
+    /// assert_eq!(base_example.map_patch(|a| a + 1), Version::Base(BaseVersion::new(0, 0)));
+    /// assert_eq!(full_example.map_patch(|a| a + 1), Version::Full(FullVersion::new(0, 0, 1)));
+    /// ```
+    #[inline]
+    pub fn map_patch<F>(self, fun: F) -> Self
+    where
+        F: FnOnce(u64) -> u64,
+    {
+        self.map(|v| match v {
+            Self::Base(base) => Version::Base(BaseVersion::new(base.major, base.minor)),
+            Self::Full(full) => {
+                Version::Full(FullVersion::new(full.major, full.minor, fun(full.patch)))
+            }
+        })
     }
 }
 
@@ -239,5 +320,41 @@ mod tests {
         });
 
         assert_eq!(mapped, Version::Full(FullVersion::new(0, 0, 999)));
+    }
+
+    #[yare::parameterized(
+        base = { Version::Base(BaseVersion::new(0, 0)) },
+        full = { Version::Full(FullVersion::new(0, 0, 0)) },
+    )]
+    fn map_major(version: Version) {
+        let mapped = version.map_major(|_v| 999);
+
+        assert_eq!(mapped.major(), 999);
+    }
+
+    #[yare::parameterized(
+        base = { Version::Base(BaseVersion::new(0, 0)) },
+        full = { Version::Full(FullVersion::new(0, 0, 0)) },
+    )]
+    fn map_minor(version: Version) {
+        let mapped = version.map_minor(|_v| 999);
+
+        assert_eq!(mapped.minor(), 999);
+    }
+
+    #[test]
+    fn map_patch_base() {
+        let version = Version::Base(BaseVersion::new(0, 0));
+        let mapped = version.map_patch(|_v| 999);
+
+        assert!(mapped.patch().is_none());
+    }
+
+    #[test]
+    fn map_patch_full() {
+        let version = Version::Full(FullVersion::new(0, 0, 0));
+        let mapped = version.map_patch(|_v| 999);
+
+        assert_eq!(mapped.patch().unwrap(), 999);
     }
 }
