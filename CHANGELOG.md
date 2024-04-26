@@ -9,6 +9,9 @@
 * Added `Version::map` method
 * Added `BaseVersion::map` method
 * Added `FullVersion::map` method
+* Added `Version::map_major` method
+* Added `Version::map_minor` method
+* Added `Version::map_patch` method
 
 ## [0.3.0]
 
