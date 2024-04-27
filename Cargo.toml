@@ -22,7 +22,7 @@ thiserror = "1"
 
 [dev-dependencies]
 yare = "1"
-criterion = "0.4"
+criterion = "0.5"
 
 [lib]
 bench = false
