@@ -21,7 +21,7 @@ semver = { version = "1", optional = true }
 thiserror = "1"
 
 [dev-dependencies]
-yare = "1"
+yare = "3"
 criterion = "0.4"
 
 [lib]
