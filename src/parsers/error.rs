@@ -9,7 +9,7 @@
 
 type Index = usize;
 
-///
+/// Error type for the parser
 #[derive(Clone, Debug, Eq, PartialEq, thiserror::Error)]
 pub enum ParserError {
     /// An error variant for fault when a some type of input, or none at all,

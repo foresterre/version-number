@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [1.0.0]
+
 ### Added
 
 * Added `Version::to_full_version_lossy` method
@@ -17,6 +19,8 @@
 * `BaseVersion::new`, `FullVersion::new`, `Version::new_base_version` and `Version::new_full_version` are now `const`
 * Updated `thiserror` to version 2
 * MSRV is now 1.61
+
+[1.0.0]: https://github.com/foresterre/version-number/releases/tag/v1.0.0
 
 ## [0.4.0]
 
