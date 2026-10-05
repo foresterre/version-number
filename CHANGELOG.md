@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Added
+
+* Added `Version::to_full_version_lossy` method
+* Added `Version::is_compatible_with` method, which compares only the components present in the version
+* Added `Version::matches` method
+* Added `From<BaseVersion>` and `From<FullVersion>` implementations for `Version`
+* Added `FromStr` implementations for `BaseVersion` and `FullVersion`
+* Added `TryFrom<&semver::Version>` implementation for `FullVersion`, behind the `semver` feature
+* Added `serde` feature, which (de)serializes `Version`, `BaseVersion` and `FullVersion` as strings
+
+### Changed
+
+* `BaseVersion::new`, `FullVersion::new`, `Version::new_base_version` and `Version::new_full_version` are now `const`
+* Updated `thiserror` to version 2
+* MSRV is now 1.61
+
 ## [0.4.0]
 
 ### Added

@@ -66,3 +66,9 @@ jobs:
 
       - name: test_with_feature_semver
         run: cargo test --verbose --features semver
+
+      - name: build_with_feature_serde
+        run: cargo build --verbose --features serde
+
+      - name: test_with_feature_serde
+        run: cargo test --verbose --features serde

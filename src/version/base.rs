@@ -1,6 +1,7 @@
 use crate::parsers::modular;
 use crate::{BaseVersionParser, FullVersion, ParserError};
 use std::fmt;
+use std::str::FromStr;
 
 /// A two-component `MAJOR.MINOR` version.
 ///
@@ -37,7 +38,7 @@ impl BaseVersion {
     /// See [`BaseVersion`] for more.
     ///
     /// [`BaseVersion`]: crate::BaseVersion
-    pub fn new(major: u64, minor: u64) -> Self {
+    pub const fn new(major: u64, minor: u64) -> Self {
         Self { major, minor }
     }
 
@@ -96,6 +97,14 @@ impl From<(u64, u64)> for BaseVersion {
 impl fmt::Display for BaseVersion {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_fmt(format_args!("{}.{}", self.major, self.minor))
+    }
+}
+
+impl FromStr for BaseVersion {
+    type Err = ParserError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        Self::parse(input)
     }
 }
 
