@@ -27,12 +27,15 @@
 //! [`BaseVersion`]: crate::BaseVersion
 //! [`FullVersion`]: crate::FullVersion
 
+use std::cmp::Ordering;
 use std::fmt;
 use std::str::FromStr;
 
 use crate::parsers::original;
 
 pub use parsers::{BaseVersionParser, FullVersionParser, ParserError, VersionParser};
+#[cfg(feature = "semver")]
+pub use version::FromSemverError;
 pub use version::{BaseVersion, FullVersion};
 
 /// This crate contains multiple parsers.
@@ -41,6 +44,8 @@ pub use version::{BaseVersion, FullVersion};
 /// (currently) by [`Version::parse`].
 pub mod parsers;
 
+#[cfg(feature = "serde")]
+mod serde_impl;
 mod version;
 
 /// Top level errors for version-numbers.
@@ -73,12 +78,12 @@ impl Version {
     }
 
     /// Create a new two-component `major.minor` version number.
-    pub fn new_base_version(major: u64, minor: u64) -> Self {
+    pub const fn new_base_version(major: u64, minor: u64) -> Self {
         Self::Base(BaseVersion { major, minor })
     }
 
     /// Create a new three-component `major.minor.patch` version number.
-    pub fn new_full_version(major: u64, minor: u64, patch: u64) -> Self {
+    pub const fn new_full_version(major: u64, minor: u64, patch: u64) -> Self {
         Self::Full(FullVersion {
             major,
             minor,
@@ -119,6 +124,62 @@ impl Version {
             Self::Base(_) => None,
             Self::Full(inner) => Some(inner.patch),
         }
+    }
+
+    /// Convert this version to a three-component [`FullVersion`].
+    ///
+    /// A two-component version gets a `patch` of `0`, so `1.2` becomes `1.2.0`.
+    pub fn to_full_version_lossy(&self) -> FullVersion {
+        match self {
+            Self::Base(inner) => inner.to_full_version_lossy(),
+            Self::Full(inner) => *inner,
+        }
+    }
+
+    /// Compare `self` with a [`FullVersion`], using only the components which `self` has.
+    ///
+    /// A two-component version ignores the `patch` of `other`, so `1.2` is equal to both `1.2.0`
+    /// and `1.2.9`, while `1.2.0` is only equal to `1.2.0`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::cmp::Ordering;
+    /// use version_number::{FullVersion, Version};
+    ///
+    /// let base = Version::new_base_version(1, 2);
+    /// let full = Version::new_full_version(1, 2, 0);
+    ///
+    /// assert_eq!(base.cmp_components(&FullVersion::new(1, 2, 9)), Ordering::Equal);
+    /// assert_eq!(full.cmp_components(&FullVersion::new(1, 2, 9)), Ordering::Less);
+    /// assert_eq!(base.cmp_components(&FullVersion::new(1, 1, 9)), Ordering::Greater);
+    /// ```
+    // This is a method instead of a `PartialOrd` implementation, because the matching
+    // `PartialEq` would not be transitive: `1.2.0 == 1.2` and `1.2 == 1.2.9`, but `1.2.0 != 1.2.9`.
+    pub fn cmp_components(&self, other: &FullVersion) -> Ordering {
+        match self {
+            Self::Base(inner) => inner.cmp(&other.to_base_version_lossy()),
+            Self::Full(inner) => inner.cmp(other),
+        }
+    }
+
+    /// Check whether `other` matches `self`, using only the components which `self` has.
+    ///
+    /// See [`Version::cmp_components`] for how the versions are compared.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use version_number::{FullVersion, Version};
+    ///
+    /// let base = Version::new_base_version(1, 2);
+    ///
+    /// assert!(base.matches(&FullVersion::new(1, 2, 0)));
+    /// assert!(base.matches(&FullVersion::new(1, 2, 9)));
+    /// assert!(!base.matches(&FullVersion::new(1, 3, 0)));
+    /// ```
+    pub fn matches(&self, other: &FullVersion) -> bool {
+        self.cmp_components(other) == Ordering::Equal
     }
 
     /// Check of which variant `self` is.
@@ -258,6 +319,18 @@ impl fmt::Display for Version {
     }
 }
 
+impl From<BaseVersion> for Version {
+    fn from(version: BaseVersion) -> Self {
+        Self::Base(version)
+    }
+}
+
+impl From<FullVersion> for Version {
+    fn from(version: FullVersion) -> Self {
+        Self::Full(version)
+    }
+}
+
 impl From<(u64, u64)> for Version {
     fn from(tuple: (u64, u64)) -> Self {
         Self::Base(BaseVersion::from(tuple))
@@ -293,6 +366,69 @@ pub enum Variant {
 #[cfg(test)]
 mod tests {
     use crate::{BaseVersion, FullVersion, Variant, Version};
+    use std::cmp::Ordering;
+
+    #[yare::parameterized(
+        base = { Version::new_base_version(1, 2), FullVersion::new(1, 2, 0) },
+        full = { Version::new_full_version(1, 2, 3), FullVersion::new(1, 2, 3) },
+    )]
+    fn to_full_version_lossy(version: Version, expected: FullVersion) {
+        assert_eq!(version.to_full_version_lossy(), expected);
+    }
+
+    #[yare::parameterized(
+        base_eq_patch_zero = { Version::new_base_version(1, 56), FullVersion::new(1, 56, 0), Ordering::Equal },
+        base_eq_patch_nonzero = { Version::new_base_version(1, 56), FullVersion::new(1, 56, 99), Ordering::Equal },
+        base_lt_minor = { Version::new_base_version(1, 56), FullVersion::new(1, 57, 0), Ordering::Less },
+        base_lt_major = { Version::new_base_version(1, 56), FullVersion::new(2, 0, 0), Ordering::Less },
+        base_gt_minor = { Version::new_base_version(1, 56), FullVersion::new(1, 55, 99), Ordering::Greater },
+        base_gt_major = { Version::new_base_version(2, 0), FullVersion::new(1, 99, 99), Ordering::Greater },
+        full_eq = { Version::new_full_version(1, 56, 1), FullVersion::new(1, 56, 1), Ordering::Equal },
+        full_lt_patch = { Version::new_full_version(1, 56, 0), FullVersion::new(1, 56, 1), Ordering::Less },
+        full_lt_minor = { Version::new_full_version(1, 56, 9), FullVersion::new(1, 57, 0), Ordering::Less },
+        full_lt_major = { Version::new_full_version(1, 99, 9), FullVersion::new(2, 0, 0), Ordering::Less },
+        full_gt_patch = { Version::new_full_version(1, 56, 1), FullVersion::new(1, 56, 0), Ordering::Greater },
+        full_gt_minor = { Version::new_full_version(1, 57, 0), FullVersion::new(1, 56, 9), Ordering::Greater },
+        full_gt_major = { Version::new_full_version(2, 0, 0), FullVersion::new(1, 99, 9), Ordering::Greater },
+    )]
+    fn cmp_components(version: Version, other: FullVersion, expected: Ordering) {
+        assert_eq!(version.cmp_components(&other), expected);
+    }
+
+    #[yare::parameterized(
+        base_patch_zero = { Version::new_base_version(1, 56), FullVersion::new(1, 56, 0), true },
+        base_patch_nonzero = { Version::new_base_version(1, 56), FullVersion::new(1, 56, 3), true },
+        base_other_minor = { Version::new_base_version(1, 56), FullVersion::new(1, 55, 0), false },
+        base_other_major = { Version::new_base_version(1, 56), FullVersion::new(2, 56, 0), false },
+        full_same = { Version::new_full_version(1, 56, 3), FullVersion::new(1, 56, 3), true },
+        full_other_patch = { Version::new_full_version(1, 56, 0), FullVersion::new(1, 56, 3), false },
+    )]
+    fn matches(version: Version, other: FullVersion, expected: bool) {
+        assert_eq!(version.matches(&other), expected);
+    }
+
+    #[test]
+    fn from_base_version() {
+        let version = Version::from(BaseVersion::new(1, 2));
+
+        assert_eq!(version, Version::Base(BaseVersion::new(1, 2)));
+    }
+
+    #[test]
+    fn from_full_version() {
+        let version = Version::from(FullVersion::new(1, 2, 3));
+
+        assert_eq!(version, Version::Full(FullVersion::new(1, 2, 3)));
+    }
+
+    #[test]
+    fn const_constructors() {
+        const BASE: Version = Version::new_base_version(1, 2);
+        const FULL: Version = Version::new_full_version(1, 2, 3);
+
+        assert_eq!(BASE, Version::Base(BaseVersion::new(1, 2)));
+        assert_eq!(FULL, Version::Full(FullVersion::new(1, 2, 3)));
+    }
 
     #[test]
     fn is_base_variant() {
