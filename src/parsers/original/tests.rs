@@ -1,5 +1,5 @@
-use crate::parsers::original::{ErrorReason, NumberError, Parser};
 use crate::Version;
+use crate::parsers::original::{ErrorReason, NumberError, Parser};
 
 #[test]
 fn two_component() {

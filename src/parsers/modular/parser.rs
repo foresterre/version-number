@@ -311,8 +311,8 @@ impl<'p> Parser<'p, ParsedFull> {
 #[cfg(test)]
 mod tests_leading_zeros {
     use super::*;
-    use crate::parsers::modular::NumberError;
     use crate::BaseVersion;
+    use crate::parsers::modular::NumberError;
     use yare::parameterized;
 
     #[test]
@@ -352,8 +352,8 @@ mod tests_leading_zeros {
 #[cfg(test)]
 mod tests_parser_base {
     use super::*;
-    use crate::parsers::modular::NumberError;
     use crate::BaseVersion;
+    use crate::parsers::modular::NumberError;
     use yare::parameterized;
 
     #[test]

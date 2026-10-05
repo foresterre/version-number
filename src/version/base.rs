@@ -222,8 +222,8 @@ mod partial_ord_tests {
 
 #[cfg(test)]
 mod parse_base {
-    use crate::parsers::error::ExpectedError;
     use crate::parsers::NumericError;
+    use crate::parsers::error::ExpectedError;
     use crate::{BaseVersion, ParserError};
 
     #[test]
