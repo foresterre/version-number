@@ -8,7 +8,10 @@ pub trait TakeWhilePeekable<'peekable, I>: Iterator
 where
     I: Iterator,
 {
-    fn take_while_peekable<P>(&'peekable mut self, pred: P) -> TakeWhilePeekableImpl<'peekable, I, P>
+    fn take_while_peekable<P>(
+        &'peekable mut self,
+        pred: P,
+    ) -> TakeWhilePeekableImpl<'peekable, I, P>
     where
         P: FnMut(&Self::Item) -> bool;
 }
@@ -25,7 +28,10 @@ impl<'peekable, I> TakeWhilePeekable<'peekable, I> for Peekable<I>
 where
     I: Iterator,
 {
-    fn take_while_peekable<P>(&'peekable mut self, pred: P) -> TakeWhilePeekableImpl<'peekable, I, P>
+    fn take_while_peekable<P>(
+        &'peekable mut self,
+        pred: P,
+    ) -> TakeWhilePeekableImpl<'peekable, I, P>
     where
         P: FnMut(&Self::Item) -> bool,
     {

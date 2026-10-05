@@ -86,6 +86,9 @@ pub enum NumericError {
     /// This error variant is returned if the number would overflow.
     ///
     /// Each number component consists of a 64 bits unsigned integer.
-    #[error("Overflow: Found number component which would be larger than the maximum supported number (max={})", u64::MAX)]
+    #[error(
+        "Overflow: Found number component which would be larger than the maximum supported number (max={})",
+        u64::MAX
+    )]
     Overflow,
 }

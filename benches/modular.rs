@@ -1,4 +1,4 @@
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 use version_number::parsers::modular::Parser as ModularParser;
 use version_number::parsers::original::Parser as OriginalParser;
 
