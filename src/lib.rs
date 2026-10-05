@@ -150,13 +150,13 @@ impl Version {
     /// let base = Version::new_base_version(1, 2);
     /// let full = Version::new_full_version(1, 2, 0);
     ///
-    /// assert_eq!(base.cmp_components(&FullVersion::new(1, 2, 9)), Ordering::Equal);
-    /// assert_eq!(full.cmp_components(&FullVersion::new(1, 2, 9)), Ordering::Less);
-    /// assert_eq!(base.cmp_components(&FullVersion::new(1, 1, 9)), Ordering::Greater);
+    /// assert_eq!(base.is_compatible_with(&FullVersion::new(1, 2, 9)), Ordering::Equal);
+    /// assert_eq!(full.is_compatible_with(&FullVersion::new(1, 2, 9)), Ordering::Less);
+    /// assert_eq!(base.is_compatible_with(&FullVersion::new(1, 1, 9)), Ordering::Greater);
     /// ```
     // This is a method instead of a `PartialOrd` implementation, because the matching
     // `PartialEq` would not be transitive: `1.2.0 == 1.2` and `1.2 == 1.2.9`, but `1.2.0 != 1.2.9`.
-    pub fn cmp_components(&self, other: &FullVersion) -> Ordering {
+    pub fn is_compatible_with(&self, other: &FullVersion) -> Ordering {
         match self {
             Self::Base(inner) => inner.cmp(&other.to_base_version_lossy()),
             Self::Full(inner) => inner.cmp(other),
@@ -165,7 +165,7 @@ impl Version {
 
     /// Check whether `other` matches `self`, using only the components which `self` has.
     ///
-    /// See [`Version::cmp_components`] for how the versions are compared.
+    /// See [`Version::is_compatible_with`] for how the versions are compared.
     ///
     /// # Example
     ///
@@ -179,7 +179,7 @@ impl Version {
     /// assert!(!base.matches(&FullVersion::new(1, 3, 0)));
     /// ```
     pub fn matches(&self, other: &FullVersion) -> bool {
-        self.cmp_components(other) == Ordering::Equal
+        self.is_compatible_with(other) == Ordering::Equal
     }
 
     /// Check of which variant `self` is.
@@ -391,8 +391,8 @@ mod tests {
         full_gt_minor = { Version::new_full_version(1, 57, 0), FullVersion::new(1, 56, 9), Ordering::Greater },
         full_gt_major = { Version::new_full_version(2, 0, 0), FullVersion::new(1, 99, 9), Ordering::Greater },
     )]
-    fn cmp_components(version: Version, other: FullVersion, expected: Ordering) {
-        assert_eq!(version.cmp_components(&other), expected);
+    fn is_compatible_with(version: Version, other: FullVersion, expected: Ordering) {
+        assert_eq!(version.is_compatible_with(&other), expected);
     }
 
     #[yare::parameterized(
